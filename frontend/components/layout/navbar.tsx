@@ -52,8 +52,8 @@ export function Navbar({ user, onLogout, className }: NavbarProps) {
       className={cn(
         'fixed top-0 left-0 right-0 z-40 transition-all duration-200',
         scrolled
-          ? 'glass-navbar shadow-lg'
-          : 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-transparent',
+          ? 'bg-slate-900/80 backdrop-blur-xl shadow-lg border-b border-slate-700/50'
+          : 'bg-slate-900/50 backdrop-blur-sm border-b border-slate-700/30',
         className
       )}
       initial={{ y: -100 }}
@@ -66,7 +66,7 @@ export function Navbar({ user, onLogout, className }: NavbarProps) {
           <div className="flex items-center">
             <motion.a
               href="/"
-              className="text-xl font-bold text-gray-900 dark:text-gray-100"
+              className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >

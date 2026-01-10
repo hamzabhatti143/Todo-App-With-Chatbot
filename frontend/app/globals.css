@@ -19,7 +19,13 @@
   }
 
   .dark body {
-    background: linear-gradient(to bottom right, rgb(15 23 42 / 1), rgb(30 41 59 / 1), rgb(15 23 42 / 1));
+    background: linear-gradient(to bottom right, rgb(2 6 23 / 1), rgb(15 23 42 / 1), rgb(30 41 59 / 1));
+    color: rgb(243 244 246 / 1); /* gray-100 */
+  }
+
+  /* Default to dark theme */
+  body {
+    background: linear-gradient(to bottom right, rgb(2 6 23 / 1), rgb(15 23 42 / 1), rgb(30 41 59 / 1));
     color: rgb(243 244 246 / 1); /* gray-100 */
   }
 }

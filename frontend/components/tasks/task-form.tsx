@@ -89,11 +89,13 @@ export function TaskForm({
     try {
       setIsSubmitting(true);
       await onSubmit(result.data);
-      onOpenChange(false);
-      // Reset form
+      // Reset form after successful submission (modal will close via parent)
       setFormData({ title: '', description: '' });
+      setErrors({});
     } catch (error) {
-      setErrors({ title: 'An error occurred. Please try again.' });
+      // Display error in form, keep modal open
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred. Please try again.';
+      setErrors({ title: errorMessage });
     } finally {
       setIsSubmitting(false);
     }

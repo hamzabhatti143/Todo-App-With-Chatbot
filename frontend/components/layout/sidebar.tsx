@@ -10,6 +10,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Home, CheckSquare, Settings, BarChart3 } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useIsLg } from '@/lib/hooks/use-media-query';
 
@@ -29,6 +31,7 @@ interface NavItem {
 export function Sidebar({ className }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const isDesktop = useIsLg();
+  const pathname = usePathname();
 
   // Load collapsed state from localStorage on mount
   useEffect(() => {
@@ -47,10 +50,10 @@ export function Sidebar({ className }: SidebarProps) {
 
   // Navigation items
   const navItems: NavItem[] = [
-    { label: 'Dashboard', icon: Home, href: '/dashboard', active: true },
-    { label: 'Tasks', icon: CheckSquare, href: '/tasks' },
-    { label: 'Analytics', icon: BarChart3, href: '/analytics' },
-    { label: 'Settings', icon: Settings, href: '/settings' },
+    { label: 'Dashboard', icon: Home, href: '/dashboard', active: pathname === '/dashboard' },
+    { label: 'Tasks', icon: CheckSquare, href: '/tasks', active: pathname === '/tasks' },
+    { label: 'Analytics', icon: BarChart3, href: '/analytics', active: pathname === '/analytics' },
+    { label: 'Settings', icon: Settings, href: '/settings', active: pathname === '/settings' },
   ];
 
   // Hide sidebar on mobile/tablet
@@ -62,8 +65,8 @@ export function Sidebar({ className }: SidebarProps) {
     <motion.aside
       className={cn(
         'fixed left-0 top-16 bottom-0 z-30',
-        'bg-white dark:bg-gray-900',
-        'border-r border-gray-200 dark:border-gray-700',
+        'bg-slate-900/50 backdrop-blur-xl',
+        'border-r border-slate-700/50',
         'transition-all duration-300 ease-in-out',
         className
       )}
@@ -75,10 +78,10 @@ export function Sidebar({ className }: SidebarProps) {
     >
       <div className="flex flex-col h-full">
         {/* Collapse Toggle Button */}
-        <div className="flex items-center justify-end p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-end p-4 border-b border-slate-700/50">
           <button
             onClick={toggleCollapsed}
-            className="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-3 rounded-lg hover:bg-slate-800/50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             <motion.div
@@ -86,7 +89,7 @@ export function Sidebar({ className }: SidebarProps) {
               animate={{ rotate: isCollapsed ? 180 : 0 }}
               transition={{ duration: 0.3 }}
             >
-              <ChevronLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              <ChevronLeft className="h-5 w-5 text-gray-300" />
             </motion.div>
           </button>
         </div>
@@ -118,14 +121,14 @@ function SidebarItem({ item, isCollapsed }: SidebarItemProps) {
   const Icon = item.icon;
 
   return (
-    <a
+    <Link
       href={item.href}
       className={cn(
         'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200',
-        'hover:bg-gray-100 dark:hover:bg-gray-800',
+        'hover:bg-slate-800/50',
         item.active
-          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-          : 'text-gray-700 dark:text-gray-300',
+          ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
+          : 'text-gray-300 border border-transparent',
         isCollapsed && 'justify-center'
       )}
     >
@@ -133,8 +136,8 @@ function SidebarItem({ item, isCollapsed }: SidebarItemProps) {
         className={cn(
           'h-5 w-5 flex-shrink-0',
           item.active
-            ? 'text-blue-600 dark:text-blue-400'
-            : 'text-gray-500 dark:text-gray-400'
+            ? 'text-blue-400'
+            : 'text-gray-400'
         )}
       />
 
@@ -151,7 +154,7 @@ function SidebarItem({ item, isCollapsed }: SidebarItemProps) {
           </motion.span>
         )}
       </AnimatePresence>
-    </a>
+    </Link>
   );
 }
 

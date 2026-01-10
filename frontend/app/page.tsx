@@ -1,25 +1,34 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import axios from 'axios'
+import { motion, useReducedMotion } from 'framer-motion'
+import {
+  Zap,
+  Shield,
+  Smartphone,
+  ArrowRight,
+  Sparkles,
+  Layers,
+  Cloud,
+  Lock,
+  Moon,
+  Sun,
+  Menu,
+  X
+} from 'lucide-react'
+import { useTheme } from '@/lib/hooks/use-theme'
+import { useState } from 'react'
 
 export default function Home() {
   const { isAuthenticated, loading } = useAuth()
   const router = useRouter()
-  const [health, setHealth] = useState<any>(null)
-  const [error, setError] = useState<string>('')
-  const [testing, setTesting] = useState(false)
-
-  // Auth testing state
-  const [authTesting, setAuthTesting] = useState(false)
-  const [authResult, setAuthResult] = useState<any>(null)
-  const [authError, setAuthError] = useState<string>('')
-  const [testEmail, setTestEmail] = useState('test@example.com')
-  const [testPassword, setTestPassword] = useState('password123')
+  const { isDark, toggleTheme } = useTheme()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const prefersReducedMotion = useReducedMotion()
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
@@ -27,317 +36,519 @@ export default function Home() {
     }
   }, [isAuthenticated, loading, router])
 
-  const testBackendConnection = async () => {
-    setTesting(true)
-    setHealth(null)
-    setError('')
-
-    try {
-      const response = await axios.get('http://localhost:8000/health')
-      setHealth(response.data)
-    } catch (err: any) {
-      setError(err.message || 'Failed to connect to backend')
-    } finally {
-      setTesting(false)
-    }
-  }
-
-  const testRegister = async () => {
-    setAuthTesting(true)
-    setAuthResult(null)
-    setAuthError('')
-
-    try {
-      const response = await axios.post('http://localhost:8000/api/auth/register', {
-        email: testEmail,
-        password: testPassword,
-      })
-      setAuthResult({
-        type: 'register',
-        success: true,
-        data: response.data,
-      })
-    } catch (err: any) {
-      setAuthError(err.response?.data?.detail || err.message || 'Registration failed')
-    } finally {
-      setAuthTesting(false)
-    }
-  }
-
-  const testLogin = async () => {
-    setAuthTesting(true)
-    setAuthResult(null)
-    setAuthError('')
-
-    try {
-      const response = await axios.post('http://localhost:8000/api/auth/login', {
-        email: testEmail,
-        password: testPassword,
-      })
-      setAuthResult({
-        type: 'login',
-        success: true,
-        data: response.data,
-        token: response.data.access_token,
-      })
-    } catch (err: any) {
-      setAuthError(err.response?.data?.detail || err.message || 'Login failed')
-    } finally {
-      setAuthTesting(false)
-    }
-  }
-
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
-        <p className="text-gray-500">Loading...</p>
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <div className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </motion.div>
       </main>
     )
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8 sm:p-24">
-      <div className="text-center space-y-6 max-w-4xl w-full">
-        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900">Todo App</h1>
-        <p className="text-lg sm:text-xl text-gray-600">
-          Full-stack todo application with Next.js and FastAPI
-        </p>
+    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 relative overflow-hidden">
+      {/* Professional Navbar */}
+      <ProfessionalNavbar
+        isDark={isDark}
+        toggleTheme={toggleTheme}
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
+      />
 
-        {/* Backend Connection Test Section */}
-        <div className="mt-8 p-6 bg-white rounded-lg shadow-md border border-gray-200">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            Backend Connection Test
-          </h2>
+      {/* Animated Background Gradients */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute top-0 -left-4 w-96 h-96 bg-blue-500/10 rounded-full mix-blend-multiply filter blur-3xl"
+          animate={!prefersReducedMotion ? {
+            scale: [1, 1.1, 1],
+            x: [0, 30, 0],
+            y: [0, -50, 0],
+          } : {}}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-0 -right-4 w-96 h-96 bg-purple-500/10 rounded-full mix-blend-multiply filter blur-3xl"
+          animate={!prefersReducedMotion ? {
+            scale: [1, 1.2, 1],
+            x: [0, -30, 0],
+            y: [0, 50, 0],
+          } : {}}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        />
+        <motion.div
+          className="absolute -bottom-8 left-20 w-96 h-96 bg-pink-500/10 rounded-full mix-blend-multiply filter blur-3xl"
+          animate={!prefersReducedMotion ? {
+            scale: [1, 0.9, 1],
+            x: [0, 50, 0],
+            y: [0, -30, 0],
+          } : {}}
+          transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+        />
+      </div>
 
-          <Button
-            onClick={testBackendConnection}
-            disabled={testing}
-            className="mb-4"
+      {/* Content */}
+      <div className="relative z-10 pt-24">
+        {/* Hero Section */}
+        <section className="container mx-auto px-4 pt-12 pb-32 sm:pt-20 sm:pb-40">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center max-w-5xl mx-auto"
           >
-            {testing ? 'Testing...' : 'Test Backend Connection'}
-          </Button>
+            {/* Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              whileHover={{ scale: 1.05 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 backdrop-blur-sm mb-8 cursor-default"
+            >
+              <Sparkles className="w-4 h-4 text-blue-400" />
+              <span className="text-sm font-medium bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                Modern Task Management
+              </span>
+            </motion.div>
 
-          {health && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-left">
-              <div className="flex items-start">
-                <svg className="w-5 h-5 text-green-600 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <div className="flex-1">
-                  <h3 className="text-green-800 font-semibold mb-2">
-                    ✅ Backend Connected Successfully
-                  </h3>
-                  <p className="text-green-700 text-sm mb-2">
-                    Frontend successfully communicated with the backend API
-                  </p>
-                  <div className="bg-green-100 rounded p-3 mt-2">
-                    <p className="text-xs text-green-800 font-mono">
-                      Response: {JSON.stringify(health, null, 2)}
-                    </p>
+            {/* Main Heading */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
+            >
+              <span className="bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
+                Organize Your Life
+              </span>
+              <br />
+              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                With Style
+              </span>
+            </motion.h1>
+
+            {/* Subheading */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-xl sm:text-2xl text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed"
+            >
+              Experience the future of task management with our beautifully designed,
+              lightning-fast, and secure todo application built with Next.js and FastAPI
+            </motion.p>
+
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            >
+              <Link href="/signup">
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    size="lg"
+                    className="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-6 rounded-xl text-lg font-semibold shadow-2xl shadow-blue-500/25 transition-all duration-300 hover:shadow-blue-500/40"
+                  >
+                    Get Started Free
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </motion.div>
+              </Link>
+              <Link href="/signin">
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-6 rounded-xl text-lg font-semibold shadow-2xl shadow-blue-500/25 transition-all duration-300 hover:shadow-blue-500/40"
+                  >
+                    Sign In
+                  </Button>
+                </motion.div>
+              </Link>
+            </motion.div>
+
+            {/* Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto"
+            >
+              {[
+                { label: 'Active Users', value: '10K+' },
+                { label: 'Tasks Completed', value: '1M+' },
+                { label: 'Success Rate', value: '99.9%' },
+              ].map((stat, index) => (
+                <motion.div
+                  key={index}
+                  className="text-center"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
+                    {stat.value}
                   </div>
-                  <div className="mt-3 text-xs text-green-600 space-y-1">
-                    <p>✓ HTTP request successful (200 OK)</p>
-                    <p>✓ No CORS errors</p>
-                    <p>✓ Backend responded correctly</p>
-                    <p>✓ Data parsed successfully</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+                  <div className="text-sm text-gray-500">{stat.label}</div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </section>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-left">
-              <div className="flex items-start">
-                <svg className="w-5 h-5 text-red-600 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-                <div className="flex-1">
-                  <h3 className="text-red-800 font-semibold mb-2">
-                    ❌ Connection Error
-                  </h3>
-                  <p className="text-red-700 text-sm mb-2">
-                    Failed to connect to the backend API
-                  </p>
-                  <div className="bg-red-100 rounded p-3 mt-2">
-                    <p className="text-xs text-red-800 font-mono">
-                      Error: {error}
-                    </p>
-                  </div>
-                  <div className="mt-3 text-xs text-red-600 space-y-1">
-                    <p>⚠️ Check that backend server is running on port 8000</p>
-                    <p>⚠️ Verify CORS configuration allows localhost:3000</p>
-                    <p>⚠️ Check browser console for detailed errors</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+        {/* Features Section */}
+        <section className="container mx-auto px-4 pb-32">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl sm:text-5xl font-bold mb-4">
+              <span className="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                Powerful Features
+              </span>
+            </h2>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              Everything you need to stay productive and organized
+            </p>
+          </motion.div>
 
-          {!health && !error && !testing && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
-              <p className="text-blue-800 text-sm">
-                Click the button above to test the connection between the frontend and backend API.
-                This will verify that CORS is configured correctly and the services can communicate.
-              </p>
-            </div>
-          )}
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            <FeatureCard
+              icon={<Zap className="w-8 h-8" />}
+              title="Lightning Fast"
+              description="Built with Next.js 15 and optimized for speed. Experience instant loading and smooth interactions."
+              gradient="from-yellow-500 to-orange-500"
+              delay={0}
+            />
 
-        {/* Authentication Testing Section */}
-        <div className="mt-8 p-6 bg-white rounded-lg shadow-md border border-gray-200">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            Authentication Endpoint Test
-          </h2>
+            <FeatureCard
+              icon={<Shield className="w-8 h-8" />}
+              title="Secure by Default"
+              description="JWT authentication, encrypted data, and secure API endpoints keep your tasks safe and private."
+              gradient="from-blue-500 to-cyan-500"
+              delay={0.1}
+            />
 
-          <div className="space-y-4 mb-4">
-            <div className="text-left">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                value={testEmail}
-                onChange={(e) => setTestEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="test@example.com"
-              />
-            </div>
-            <div className="text-left">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                value={testPassword}
-                onChange={(e) => setTestPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="password123"
-              />
-            </div>
+            <FeatureCard
+              icon={<Smartphone className="w-8 h-8" />}
+              title="Mobile Optimized"
+              description="Responsive design that works flawlessly on all devices. Manage tasks anywhere, anytime."
+              gradient="from-purple-500 to-pink-500"
+              delay={0.2}
+            />
+
+            <FeatureCard
+              icon={<Layers className="w-8 h-8" />}
+              title="Smart Organization"
+              description="Advanced filtering, sorting, and search capabilities to find exactly what you need."
+              gradient="from-green-500 to-emerald-500"
+              delay={0.3}
+            />
+
+            <FeatureCard
+              icon={<Cloud className="w-8 h-8" />}
+              title="Cloud Sync"
+              description="Your tasks are synced across all devices in real-time with our robust backend."
+              gradient="from-indigo-500 to-blue-500"
+              delay={0.4}
+            />
+
+            <FeatureCard
+              icon={<Lock className="w-8 h-8" />}
+              title="Privacy First"
+              description="Your data belongs to you. We use industry-standard encryption and never share your information."
+              gradient="from-red-500 to-rose-500"
+              delay={0.5}
+            />
           </div>
+        </section>
 
-          <div className="flex gap-3 mb-4">
-            <Button
-              onClick={testRegister}
-              disabled={authTesting}
-              variant="secondary"
-            >
-              {authTesting ? 'Testing...' : 'Test Register'}
-            </Button>
-            <Button
-              onClick={testLogin}
-              disabled={authTesting}
-            >
-              {authTesting ? 'Testing...' : 'Test Login'}
-            </Button>
-          </div>
-
-          {authResult && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-left">
-              <div className="flex items-start">
-                <svg className="w-5 h-5 text-green-600 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <div className="flex-1">
-                  <h3 className="text-green-800 font-semibold mb-2">
-                    ✅ {authResult.type === 'register' ? 'Registration' : 'Login'} Successful
-                  </h3>
-                  <p className="text-green-700 text-sm mb-2">
-                    {authResult.type === 'register'
-                      ? 'User account created successfully'
-                      : 'User authenticated successfully'}
-                  </p>
-                  <div className="bg-green-100 rounded p-3 mt-2 max-h-48 overflow-y-auto">
-                    <p className="text-xs text-green-800 font-mono whitespace-pre-wrap">
-                      {JSON.stringify(authResult.data, null, 2)}
-                    </p>
-                  </div>
-                  {authResult.token && (
-                    <div className="mt-3">
-                      <p className="text-xs text-green-700 font-semibold mb-1">JWT Token (first 50 chars):</p>
-                      <p className="text-xs text-green-600 font-mono bg-green-100 p-2 rounded break-all">
-                        {authResult.token.substring(0, 50)}...
-                      </p>
-                    </div>
-                  )}
-                  <div className="mt-3 text-xs text-green-600 space-y-1">
-                    <p>✓ Authentication endpoint working</p>
-                    <p>✓ Password hashing verified</p>
-                    {authResult.token && <p>✓ JWT token generated</p>}
-                    <p>✓ Response structure correct</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {authError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-left">
-              <div className="flex items-start">
-                <svg className="w-5 h-5 text-red-600 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-                <div className="flex-1">
-                  <h3 className="text-red-800 font-semibold mb-2">
-                    ❌ Authentication Error
-                  </h3>
-                  <div className="bg-red-100 rounded p-3 mt-2">
-                    <p className="text-xs text-red-800 font-mono">
-                      Error: {authError}
-                    </p>
-                  </div>
-                  <div className="mt-3 text-xs text-red-600 space-y-1">
-                    <p>💡 Common issues:</p>
-                    <p>• User already exists (try different email for register)</p>
-                    <p>• Invalid credentials (wrong email/password for login)</p>
-                    <p>• Backend authentication not configured</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {!authResult && !authError && !authTesting && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
-              <p className="text-blue-800 text-sm mb-2">
-                Test the authentication endpoints:
+        {/* Tech Stack Section */}
+        <section className="container mx-auto px-4 pb-32">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-4xl mx-auto"
+          >
+            <div className="glass-card p-12 text-center bg-slate-900/50 border-slate-700/50">
+              <h3 className="text-3xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                Built with Modern Technology
+              </h3>
+              <p className="text-gray-400 mb-8 text-lg">
+                Leveraging the latest and greatest in web development
               </p>
-              <ul className="text-blue-700 text-xs space-y-1 ml-4 list-disc">
-                <li><strong>Register:</strong> Creates a new user account with hashed password</li>
-                <li><strong>Login:</strong> Authenticates user and returns JWT token</li>
-                <li>Use the same email/password for both tests</li>
-                <li>Try registering first, then logging in with same credentials</li>
-              </ul>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {[
+                  { name: 'Next.js 15', color: 'from-white to-gray-400' },
+                  { name: 'TypeScript', color: 'from-blue-400 to-blue-600' },
+                  { name: 'FastAPI', color: 'from-green-400 to-emerald-600' },
+                  { name: 'PostgreSQL', color: 'from-blue-300 to-cyan-500' },
+                ].map((tech, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    className="px-4 py-3 rounded-lg bg-slate-800/50 border border-slate-700/50 hover:border-slate-600/50 transition-all cursor-default"
+                  >
+                    <span className={`font-semibold bg-gradient-to-r ${tech.color} bg-clip-text text-transparent`}>
+                      {tech.name}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
+          </motion.div>
+        </section>
 
-        {/* Auth Buttons */}
-        <div className="flex gap-4 justify-center mt-8">
-          <Link href="/signin">
-            <Button>Sign In</Button>
-          </Link>
-          <Link href="/signup">
-            <Button variant="secondary">Register</Button>
-          </Link>
-        </div>
+        {/* CTA Section */}
+        <section className="container mx-auto px-4 pb-32">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-4xl mx-auto text-center"
+          >
+            <div className="glass-card p-12 bg-slate-900/50 border-2 border-slate-700/50">
+              <h3 className="text-4xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                Ready to Get Started?
+              </h3>
+              <p className="text-gray-400 text-lg mb-8">
+                Join thousands of users who are already organizing their life with style
+              </p>
+              <Link href="/signup">
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    size="lg"
+                    className="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-6 rounded-xl text-lg font-semibold shadow-2xl shadow-blue-500/25 transition-all duration-300 hover:shadow-blue-500/40"
+                  >
+                    Create Free Account
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </motion.div>
+              </Link>
+            </div>
+          </motion.div>
+        </section>
 
-        {/* API Documentation Link */}
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <p className="text-sm text-gray-600">
-            Backend API Documentation:{' '}
-            <a
-              href="http://localhost:8000/docs"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 underline"
-            >
-              http://localhost:8000/docs
-            </a>
-          </p>
-        </div>
+        {/* Footer */}
+        <footer className="container mx-auto px-4 py-12 border-t border-slate-800/50">
+          <div className="text-center text-gray-500 text-sm">
+            <p className="mb-2">
+              © 2025 Modern Todo App. Built with{' '}
+              <span className="text-red-400">♥</span> using Next.js & FastAPI
+            </p>
+            <p>
+              <a
+                href="http://localhost:8000/docs"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                API Documentation
+              </a>
+            </p>
+          </div>
+        </footer>
       </div>
     </main>
+  )
+}
+
+// Professional Navbar Component
+interface ProfessionalNavbarProps {
+  isDark: boolean
+  toggleTheme: () => void
+  mobileMenuOpen: boolean
+  setMobileMenuOpen: (open: boolean) => void
+}
+
+function ProfessionalNavbar({ isDark, toggleTheme, mobileMenuOpen, setMobileMenuOpen }: ProfessionalNavbarProps) {
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  return (
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.5, type: "spring" }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/50 shadow-lg'
+          : 'bg-transparent'
+      }`}
+    >
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-20">
+          {/* Logo */}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                TaskFlow
+              </span>
+            </Link>
+          </motion.div>
+
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center gap-6">
+            <Link href="#features">
+              <motion.span
+                whileHover={{ scale: 1.05 }}
+                className="text-gray-300 hover:text-white transition-colors cursor-pointer"
+              >
+                Features
+              </motion.span>
+            </Link>
+            <Link href="http://localhost:8000/docs" target="_blank">
+              <motion.span
+                whileHover={{ scale: 1.05 }}
+                className="text-gray-300 hover:text-white transition-colors cursor-pointer"
+              >
+                API Docs
+              </motion.span>
+            </Link>
+
+            {/* Theme Toggle */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleTheme}
+              className="p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 transition-colors"
+              aria-label="Toggle theme"
+            >
+              <motion.div
+                initial={false}
+                animate={{ rotate: isDark ? 0 : 180 }}
+                transition={{ duration: 0.3 }}
+              >
+                {isDark ? <Moon className="w-5 h-5 text-blue-400" /> : <Sun className="w-5 h-5 text-yellow-400" />}
+              </motion.div>
+            </motion.button>
+
+            <Link href="/signin">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                  Sign In
+                </Button>
+              </motion.div>
+            </Link>
+            <Link href="/signup">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                  Get Started
+                </Button>
+              </motion.div>
+            </Link>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-lg bg-slate-800/50"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </motion.button>
+        </div>
+
+        {/* Mobile Menu */}
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{
+            height: mobileMenuOpen ? 'auto' : 0,
+            opacity: mobileMenuOpen ? 1 : 0,
+          }}
+          transition={{ duration: 0.3 }}
+          className="md:hidden overflow-hidden"
+        >
+          <div className="py-4 space-y-4">
+            <Link href="#features" className="block text-gray-300 hover:text-white">
+              Features
+            </Link>
+            <Link href="http://localhost:8000/docs" target="_blank" className="block text-gray-300 hover:text-white">
+              API Docs
+            </Link>
+            <button onClick={toggleTheme} className="flex items-center gap-2 text-gray-300 hover:text-white">
+              {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+              Toggle Theme
+            </button>
+            <Link href="/signin" className="block">
+              <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600">Sign In</Button>
+            </Link>
+            <Link href="/signup" className="block">
+              <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600">Get Started</Button>
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    </motion.nav>
+  )
+}
+
+// Feature Card Component with improved dark theme colors
+interface FeatureCardProps {
+  icon: React.ReactNode
+  title: string
+  description: string
+  gradient: string
+  delay: number
+}
+
+function FeatureCard({ icon, title, description, gradient, delay }: FeatureCardProps) {
+  const prefersReducedMotion = useReducedMotion()
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay, duration: 0.5 }}
+      whileHover={{ y: -8, scale: 1.02 }}
+      className="group relative"
+    >
+      <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300 -z-10"
+           style={{ background: `linear-gradient(to right, var(--tw-gradient-stops))` }} />
+      <div className="glass-card p-8 h-full hover:border-slate-600/50 transition-all duration-300 bg-slate-900/50 border-slate-700/50">
+        <motion.div
+          whileHover={!prefersReducedMotion ? { rotate: 360 } : {}}
+          transition={{ duration: 0.5 }}
+          className={`inline-flex p-3 rounded-xl bg-gradient-to-r ${gradient} mb-4`}
+        >
+          <div className="text-white">
+            {icon}
+          </div>
+        </motion.div>
+        <h3 className="text-xl font-bold mb-3 text-white">
+          {title}
+        </h3>
+        <p className="text-gray-400 leading-relaxed">
+          {description}
+        </p>
+      </div>
+    </motion.div>
   )
 }

@@ -62,7 +62,7 @@ export function useAuth() {
     localStorage.removeItem('user_id')
     setIsAuthenticated(false)
     setUserId(null)
-    router.push('/auth/login')
+    router.push('/signin')
   }
 
   return {

@@ -1,8 +1,7 @@
 /**
- * Dashboard Layout
+ * Settings Layout
  *
- * Main layout for authenticated dashboard pages with Navbar, Sidebar (desktop only),
- * and main content area with proper responsive grid.
+ * Inherits the dashboard layout with Navbar and Sidebar.
  */
 
 'use client';
@@ -11,14 +10,14 @@ import { useAuth } from '@/hooks/use-auth';
 import { Navbar, NavbarSpacer } from '@/components/layout/navbar';
 import { Sidebar, SidebarSpacer } from '@/components/layout/sidebar';
 
-export default function DashboardLayout({
+export default function SettingsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const { isAuthenticated, userId, logout } = useAuth();
 
-  // Get user info (in a real app, this would come from useAuth)
+  // Get user info
   const user = isAuthenticated && userId
     ? {
         name: 'User',
@@ -35,20 +34,13 @@ export default function DashboardLayout({
         <div className="absolute -bottom-8 left-20 w-96 h-96 bg-pink-500/5 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
       </div>
 
-      {/* Navbar */}
       <Navbar user={user} onLogout={logout} />
-
-      {/* Spacer for fixed navbar */}
       <NavbarSpacer />
 
       <div className="flex relative z-10">
-        {/* Sidebar (desktop only) */}
         <Sidebar />
-
-        {/* Sidebar Spacer */}
         <SidebarSpacer />
 
-        {/* Main Content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             {children}

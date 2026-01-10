@@ -53,7 +53,13 @@ export default function DashboardPage() {
 
   // Handle create task
   const handleCreateTask = async (data: TaskCreate) => {
-    await createTask(data);
+    const result = await createTask(data);
+    if (result.success) {
+      setIsFormOpen(false);
+    } else if (result.error) {
+      // Re-throw error so form can display it
+      throw new Error(result.error);
+    }
   };
 
   // Handle edit task
@@ -65,8 +71,14 @@ export default function DashboardPage() {
   // Handle update task
   const handleUpdateTask = async (data: TaskCreate) => {
     if (editingTask) {
-      await updateTask(editingTask.id, data);
-      setEditingTask(null);
+      const result = await updateTask(editingTask.id, data);
+      if (result.success) {
+        setIsFormOpen(false);
+        setEditingTask(null);
+      } else if (result.error) {
+        // Re-throw error so form can display it
+        throw new Error(result.error);
+      }
     }
   };
 
@@ -166,10 +178,10 @@ export default function DashboardPage() {
       <FadeIn>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
               My Tasks
             </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
+            <p className="mt-2 text-gray-400">
               Manage your tasks and stay organized
             </p>
           </div>
@@ -178,7 +190,7 @@ export default function DashboardPage() {
           <Button
             onClick={() => setIsFormOpen(true)}
             size="lg"
-            className="hidden sm:flex"
+            className="hidden sm:flex bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Plus className="h-5 w-5 mr-2" />
             New Task
@@ -224,7 +236,7 @@ export default function DashboardPage() {
       {/* Floating Action Button (Mobile) */}
       <motion.button
         onClick={() => setIsFormOpen(true)}
-        className="fixed bottom-6 right-6 sm:hidden z-30 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center"
+        className="fixed bottom-6 right-6 sm:hidden z-10 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         initial={{ scale: 0 }}
@@ -259,24 +271,24 @@ function LoadingSkeleton() {
       {[...Array(3)].map((_, i) => (
         <motion.div
           key={i}
-          className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
+          className="bg-slate-900/50 backdrop-blur-sm rounded-lg p-4 border border-slate-700/50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: i * 0.1 }}
         >
           <div className="flex items-start gap-3">
             {/* Checkbox skeleton */}
-            <div className="w-5 h-5 rounded bg-gray-200 dark:bg-gray-700 animate-pulse" />
+            <div className="w-5 h-5 rounded bg-slate-700/50 animate-pulse" />
 
             <div className="flex-1 space-y-2">
               {/* Title skeleton */}
-              <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4" />
+              <div className="h-5 bg-slate-700/50 rounded animate-pulse w-3/4" />
 
               {/* Description skeleton */}
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-1/2" />
+              <div className="h-4 bg-slate-700/50 rounded animate-pulse w-1/2" />
 
               {/* Time skeleton */}
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-24" />
+              <div className="h-3 bg-slate-700/50 rounded animate-pulse w-24" />
             </div>
           </div>
         </motion.div>
@@ -296,17 +308,17 @@ interface ErrorStateProps {
 function ErrorState({ error, onRetry }: ErrorStateProps) {
   return (
     <FadeIn>
-      <Card variant="default" padding="lg" className="border-red-200 dark:border-red-900/50">
+      <Card variant="default" padding="lg" className="bg-red-900/20 border-red-500/50">
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0">
-            <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+            <AlertCircle className="h-6 w-6 text-red-400" />
           </div>
 
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-red-900 dark:text-red-100">
+            <h3 className="text-lg font-semibold text-red-100">
               Something went wrong
             </h3>
-            <p className="mt-1 text-sm text-red-700 dark:text-red-300">
+            <p className="mt-1 text-sm text-red-300">
               {error}
             </p>
 
@@ -314,7 +326,7 @@ function ErrorState({ error, onRetry }: ErrorStateProps) {
               onClick={onRetry}
               variant="secondary"
               size="sm"
-              className="mt-4"
+              className="mt-4 bg-red-600 hover:bg-red-700 text-white"
             >
               Try again
             </Button>

@@ -8,7 +8,16 @@ import axios, { AxiosError } from 'axios'
 import type { Task, TaskCreate, TaskUpdate } from '@/types/task'
 import type { UserCreate, UserLogin, Token, User } from '@/types/user'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://hamzabhatti-todo-fullstack-web.hf.space'
+
+// Log API URL for debugging (will show in browser console)
+if (typeof window !== 'undefined') {
+  console.log('🔗 API Configuration:', {
+    url: API_URL,
+    env: process.env.NEXT_PUBLIC_API_URL,
+    source: process.env.NEXT_PUBLIC_API_URL ? 'environment variable' : 'fallback'
+  })
+}
 
 // Create axios instance
 const apiClient = axios.create({

@@ -42,7 +42,7 @@ export function DialogContent({ children, className, showClose = true }: DialogC
   const isMobile = useMediaQuery('(max-width: 640px)');
 
   return (
-    <RadixDialog.Portal forceMount>
+    <RadixDialog.Portal>
       <AnimatePresence>
         <RadixDialog.Overlay key="dialog-overlay" asChild>
           <motion.div
@@ -61,7 +61,7 @@ export function DialogContent({ children, className, showClose = true }: DialogC
               className={cn(
                 'fixed bottom-0 left-0 right-0 z-50',
                 'max-h-[90vh] overflow-y-auto',
-                'bg-white dark:bg-gray-900',
+                'bg-slate-900/95 backdrop-blur-xl border-t border-slate-700/50',
                 'rounded-t-2xl shadow-2xl',
                 className
               )}
@@ -75,8 +75,8 @@ export function DialogContent({ children, className, showClose = true }: DialogC
               }}
             >
               {showClose && (
-                <RadixDialog.Close className="absolute right-4 top-4 rounded-full p-3.5 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
-                  <X className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                <RadixDialog.Close className="absolute right-4 top-4 rounded-full p-3.5 hover:bg-slate-800/50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
+                  <X className="h-4 w-4 text-gray-400" />
                   <span className="sr-only">Close</span>
                 </RadixDialog.Close>
               )}
@@ -88,7 +88,7 @@ export function DialogContent({ children, className, showClose = true }: DialogC
               className={cn(
                 'fixed left-1/2 top-1/2 z-50',
                 'w-full max-w-lg max-h-[90vh] overflow-y-auto',
-                'bg-white dark:bg-gray-900',
+                'bg-slate-900/95 backdrop-blur-xl border border-slate-700/50',
                 'rounded-lg shadow-2xl',
                 'focus:outline-none',
                 className
@@ -104,8 +104,8 @@ export function DialogContent({ children, className, showClose = true }: DialogC
               }}
             >
               {showClose && (
-                <RadixDialog.Close className="absolute right-4 top-4 rounded-full p-3.5 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
-                  <X className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                <RadixDialog.Close className="absolute right-4 top-4 rounded-full p-3.5 hover:bg-slate-800/50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
+                  <X className="h-4 w-4 text-gray-400" />
                   <span className="sr-only">Close</span>
                 </RadixDialog.Close>
               )}
@@ -129,7 +129,7 @@ export function DialogHeader({ className, children, ...props }: React.HTMLAttrib
 export function DialogTitle({ className, children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <RadixDialog.Title asChild>
-      <h2 className={cn('text-xl font-semibold text-gray-900 dark:text-gray-100', className)} {...props}>
+      <h2 className={cn('text-xl font-semibold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent', className)} {...props}>
         {children}
       </h2>
     </RadixDialog.Title>
@@ -139,7 +139,7 @@ export function DialogTitle({ className, children, ...props }: React.HTMLAttribu
 export function DialogDescription({ className, children, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <RadixDialog.Description asChild>
-      <p className={cn('text-sm text-gray-600 dark:text-gray-400 mt-2', className)} {...props}>
+      <p className={cn('text-sm text-gray-400 mt-2', className)} {...props}>
         {children}
       </p>
     </RadixDialog.Description>

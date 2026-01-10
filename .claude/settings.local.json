@@ -41,7 +41,11 @@
       "Bash(for file in lib/utils.ts lib/animations.ts types/task.ts types/user.ts types/api.ts components/ui/button.tsx components/ui/input.tsx components/ui/card.tsx components/ui/checkbox.tsx components/ui/avatar.tsx components/ui/dialog.tsx components/ui/dropdown.tsx components/ui/tabs.tsx)",
       "Bash(for file in lib/hooks/use-theme.ts lib/hooks/use-media-query.ts hooks/use-auth.ts hooks/use-tasks.ts app/dashboard/page.tsx app/dashboard/layout.tsx app/signin/page.tsx app/signup/page.tsx)",
       "Bash(npm run lint:*)",
-      "Bash(npx next lint)"
+      "Bash(npx next lint)",
+      "Bash(python3:*)",
+      "Bash(source .venv-wsl/bin/activate)",
+      "Bash(pip install:*)",
+      "Bash(grep:*)"
     ]
   }
 }

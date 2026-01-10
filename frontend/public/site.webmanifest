@@ -1,0 +1,22 @@
+{
+  "name": "TaskFlow - Modern Task Management",
+  "short_name": "TaskFlow",
+  "description": "Experience the future of task management with our beautifully designed, lightning-fast, and secure todo application.",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#0F172A",
+  "background_color": "#0F172A",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}

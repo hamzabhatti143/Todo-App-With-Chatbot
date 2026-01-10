@@ -1,8 +1,8 @@
 /**
  * Sign Up Page
  *
- * User registration page with SignUpForm component, page fade-in animation,
- * API integration, and success animation before redirect.
+ * User registration page with modern dark theme matching home page,
+ * gradient backgrounds, and smooth animations.
  */
 
 'use client';
@@ -13,8 +13,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SignupForm } from '@/components/auth/signup-form';
 import { SuccessCheckmark } from '@/components/animations/checkmark-draw';
 import { FadeIn } from '@/components/animations/fade-in';
-import { Card } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
+import { Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -38,11 +39,36 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Background Pattern */}
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
+      {/* Animated Background Gradients - Same as Home Page */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-blue-200/20 to-transparent dark:from-blue-900/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-purple-200/20 to-transparent dark:from-purple-900/20 rounded-full blur-3xl" />
+        <motion.div
+          className="absolute top-0 -left-4 w-96 h-96 bg-blue-500/10 rounded-full mix-blend-multiply filter blur-3xl"
+          animate={{
+            scale: [1, 1.1, 1],
+            x: [0, 30, 0],
+            y: [0, -50, 0],
+          }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-0 -right-4 w-96 h-96 bg-purple-500/10 rounded-full mix-blend-multiply filter blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            x: [0, -30, 0],
+            y: [0, 50, 0],
+          }}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        />
+        <motion.div
+          className="absolute -bottom-8 left-20 w-96 h-96 bg-pink-500/10 rounded-full mix-blend-multiply filter blur-3xl"
+          animate={{
+            scale: [1, 0.9, 1],
+            x: [0, 50, 0],
+            y: [0, -30, 0],
+          }}
+          transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+        />
       </div>
 
       <FadeIn className="w-full max-w-md relative z-10">
@@ -53,11 +79,29 @@ export default function SignUpPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
             >
-              <Card variant="glass" padding="lg" className="shadow-2xl">
+              {/* Logo/Brand */}
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-center mb-8"
+              >
+                <Link href="/" className="inline-flex items-center gap-2">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+                    <Sparkles className="w-7 h-7 text-white" />
+                  </div>
+                  <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                    TaskFlow
+                  </span>
+                </Link>
+              </motion.div>
+
+              {/* Card with Dark Theme */}
+              <div className="glass-card p-8 shadow-2xl bg-slate-900/50 border-slate-700/50">
                 {/* Header */}
                 <div className="text-center mb-8">
                   <motion.h1
-                    className="text-3xl font-bold text-gray-900 dark:text-gray-100"
+                    className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.1 }}
@@ -65,7 +109,7 @@ export default function SignUpPage() {
                     Create your account
                   </motion.h1>
                   <motion.p
-                    className="mt-2 text-gray-600 dark:text-gray-400"
+                    className="mt-2 text-gray-400"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.2 }}
@@ -79,7 +123,23 @@ export default function SignUpPage() {
                   onSubmit={handleSubmit}
                   onSigninClick={() => router.push('/signin')}
                 />
-              </Card>
+              </div>
+
+              {/* Footer Link */}
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="mt-6 text-center text-sm text-gray-500"
+              >
+                Already have an account?{' '}
+                <Link
+                  href="/signin"
+                  className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                >
+                  Sign in
+                </Link>
+              </motion.p>
             </motion.div>
           ) : (
             <motion.div
@@ -91,7 +151,7 @@ export default function SignUpPage() {
             >
               <SuccessCheckmark size={96} onComplete={() => {}} />
               <motion.p
-                className="mt-6 text-xl font-semibold text-gray-900 dark:text-gray-100"
+                className="mt-6 text-xl font-semibold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.4 }}
@@ -99,7 +159,7 @@ export default function SignUpPage() {
                 Account created successfully!
               </motion.p>
               <motion.p
-                className="mt-2 text-gray-600 dark:text-gray-400"
+                className="mt-2 text-gray-400"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.5 }}
