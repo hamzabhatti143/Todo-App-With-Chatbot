@@ -2,10 +2,13 @@
 Task Database Model
 """
 
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
 from uuid import UUID, uuid4
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.user import User
 
 
 class Task(SQLModel, table=True):
@@ -19,6 +22,9 @@ class Task(SQLModel, table=True):
     user_id: UUID = Field(foreign_key="users.id", index=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    # Relationships
+    user: "User" = Relationship(back_populates="tasks")
 
     class Config:
         json_schema_extra = {

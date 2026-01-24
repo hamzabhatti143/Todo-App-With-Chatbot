@@ -7,6 +7,13 @@
 import axios, { AxiosError } from 'axios'
 import type { Task, TaskCreate, TaskUpdate } from '@/types/task'
 import type { UserCreate, UserLogin, Token, User } from '@/types/user'
+import type {
+  ChatMessageRequest,
+  ChatMessageResponse,
+  ConversationListItem,
+  ConversationWithMessages,
+  ChatMessage
+} from '@/types/chat'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://hamzabhatti-todo-fullstack-web.hf.space'
 
@@ -27,7 +34,7 @@ const apiClient = axios.create({
   },
 })
 
-// Add auth interceptor
+// Add auth request interceptor
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token')
   if (token) {
@@ -35,6 +42,35 @@ apiClient.interceptors.request.use((config) => {
   }
   return config
 })
+
+// Add response interceptor for error handling
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      // Handle 401 Unauthorized - token expired or invalid
+      if (error.response.status === 401) {
+        // Clear auth state
+        localStorage.removeItem('auth_token')
+        localStorage.removeItem('user_id')
+
+        // Redirect to sign in page
+        if (typeof window !== 'undefined') {
+          window.location.href = '/signin?expired=true'
+        }
+      }
+
+      // Handle 403 Forbidden - access denied
+      if (error.response.status === 403) {
+        // Error will be caught by the calling code
+        // and displayed to user
+        console.error('Access denied:', error.response.data)
+      }
+    }
+
+    return Promise.reject(error)
+  }
+)
 
 // Auth API
 export const authApi = {
@@ -77,6 +113,34 @@ export const tasksApi = {
 
   toggleComplete: async (userId: string, taskId: string): Promise<Task> => {
     const response = await apiClient.patch(`/api/${userId}/tasks/${taskId}/complete`)
+    return response.data
+  },
+}
+
+// Chat API
+export const chatApi = {
+  sendMessage: async (data: ChatMessageRequest): Promise<ChatMessageResponse> => {
+    const response = await apiClient.post('/api/chat', data)
+    return response.data
+  },
+}
+
+// Conversations API
+export const conversationsApi = {
+  list: async (limit: number = 50, offset: number = 0): Promise<ConversationListItem[]> => {
+    const response = await apiClient.get('/api/conversations', {
+      params: { limit, offset },
+    })
+    return response.data
+  },
+
+  get: async (conversationId: string): Promise<ConversationWithMessages> => {
+    const response = await apiClient.get(`/api/conversations/${conversationId}`)
+    return response.data
+  },
+
+  getMessages: async (conversationId: string): Promise<ChatMessage[]> => {
+    const response = await apiClient.get(`/api/conversations/${conversationId}/messages`)
     return response.data
   },
 }

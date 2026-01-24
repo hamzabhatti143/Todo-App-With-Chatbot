@@ -1,0 +1,381 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "MCP Tools for Todo AI Chatbot",
+  "description": "Model Context Protocol tool definitions for Gemini AI agent to perform task operations",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "add_task",
+      "description": "Create a new task for the authenticated user. Extracts task title and optional description from user's natural language message.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Task title extracted from user's message (1-200 characters)",
+            "minLength": 1,
+            "maxLength": 200,
+            "example": "Buy groceries"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional task description with additional details (max 1000 characters)",
+            "maxLength": 1000,
+            "nullable": true,
+            "example": "Milk, eggs, bread, vegetables"
+          }
+        },
+        "required": ["title"],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the created task"
+          },
+          "title": {
+            "type": "string",
+            "description": "Task title"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Task description (if provided)"
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "Task completion status (always false for new tasks)"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the user who owns this task"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when task was created"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when task was last updated"
+          }
+        },
+        "required": ["id", "title", "completed", "user_id", "created_at", "updated_at"]
+      },
+      "errors": [
+        {
+          "code": "VALIDATION_ERROR",
+          "description": "Title is empty, too long, or contains invalid characters"
+        },
+        {
+          "code": "DATABASE_ERROR",
+          "description": "Failed to create task due to database connection issue"
+        }
+      ]
+    },
+    {
+      "name": "list_tasks",
+      "description": "Retrieve all tasks for the authenticated user, optionally filtered by completion status. Results are ordered by creation date (most recent first).",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "completed": {
+            "type": "boolean",
+            "description": "Optional filter: true=completed tasks only, false=incomplete tasks only, omit=all tasks",
+            "nullable": true,
+            "example": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Unique identifier for the task"
+            },
+            "title": {
+              "type": "string",
+              "description": "Task title"
+            },
+            "description": {
+              "type": "string",
+              "nullable": true,
+              "description": "Task description (if provided)"
+            },
+            "completed": {
+              "type": "boolean",
+              "description": "Task completion status"
+            },
+            "user_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID of the user who owns this task"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Timestamp when task was created"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Timestamp when task was last updated"
+            }
+          },
+          "required": ["id", "title", "completed", "user_id", "created_at", "updated_at"]
+        },
+        "description": "Array of task objects matching the filter criteria"
+      },
+      "errors": [
+        {
+          "code": "DATABASE_ERROR",
+          "description": "Failed to retrieve tasks due to database connection issue"
+        }
+      ]
+    },
+    {
+      "name": "complete_task",
+      "description": "Mark a task as completed (or toggle completion status). The task must belong to the authenticated user. Use this tool when user says 'mark X as done', 'complete X', 'I finished X', etc.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier of the task to complete. Must be extracted from previous list_tasks results or user's specific reference.",
+            "example": "880e8400-e29b-41d4-a716-446655440003"
+          }
+        },
+        "required": ["task_id"],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the task"
+          },
+          "title": {
+            "type": "string",
+            "description": "Task title"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Task description (if provided)"
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "Task completion status (toggled from previous state)"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the user who owns this task"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when task was created"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when task was last updated (reflects completion time)"
+          }
+        },
+        "required": ["id", "title", "completed", "user_id", "created_at", "updated_at"]
+      },
+      "errors": [
+        {
+          "code": "NOT_FOUND",
+          "description": "Task not found or does not belong to authenticated user"
+        },
+        {
+          "code": "DATABASE_ERROR",
+          "description": "Failed to update task due to database connection issue"
+        }
+      ]
+    },
+    {
+      "name": "update_task",
+      "description": "Update task title and/or description. The task must belong to the authenticated user. Use this tool when user wants to modify existing task details.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier of the task to update",
+            "example": "880e8400-e29b-41d4-a716-446655440003"
+          },
+          "title": {
+            "type": "string",
+            "description": "New task title (1-200 characters). If omitted, title remains unchanged.",
+            "minLength": 1,
+            "maxLength": 200,
+            "nullable": true,
+            "example": "Buy groceries and cook dinner"
+          },
+          "description": {
+            "type": "string",
+            "description": "New task description (max 1000 characters). If omitted, description remains unchanged. Set to empty string to clear description.",
+            "maxLength": 1000,
+            "nullable": true,
+            "example": "Updated shopping list: milk, eggs, bread, chicken, vegetables"
+          }
+        },
+        "required": ["task_id"],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the task"
+          },
+          "title": {
+            "type": "string",
+            "description": "Updated task title"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Updated task description"
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "Task completion status (unchanged)"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the user who owns this task"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when task was originally created"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when task was last updated (reflects update time)"
+          }
+        },
+        "required": ["id", "title", "completed", "user_id", "created_at", "updated_at"]
+      },
+      "errors": [
+        {
+          "code": "NOT_FOUND",
+          "description": "Task not found or does not belong to authenticated user"
+        },
+        {
+          "code": "VALIDATION_ERROR",
+          "description": "Title is empty, too long, or both title and description are omitted"
+        },
+        {
+          "code": "DATABASE_ERROR",
+          "description": "Failed to update task due to database connection issue"
+        }
+      ]
+    },
+    {
+      "name": "delete_task",
+      "description": "Permanently delete a task. The task must belong to the authenticated user. Use this tool when user wants to remove a task (e.g., 'delete X', 'remove X', 'cancel X').",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier of the task to delete",
+            "example": "880e8400-e29b-41d4-a716-446655440003"
+          }
+        },
+        "required": ["task_id"],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "True if task was deleted successfully",
+            "const": true
+          },
+          "task_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the deleted task (for confirmation)"
+          }
+        },
+        "required": ["success", "task_id"]
+      },
+      "errors": [
+        {
+          "code": "NOT_FOUND",
+          "description": "Task not found or does not belong to authenticated user"
+        },
+        {
+          "code": "DATABASE_ERROR",
+          "description": "Failed to delete task due to database connection issue"
+        }
+      ]
+    }
+  ],
+  "context": {
+    "user_id_source": "JWT token from conversation context",
+    "user_isolation": "All tools automatically filter by user_id from authenticated session",
+    "error_handling": "Tools raise exceptions which are caught by Gemini agent and converted to conversational error messages",
+    "rate_limiting": "Applied at API endpoint level (not per-tool)"
+  },
+  "usage_examples": [
+    {
+      "user_message": "Add a task to buy groceries",
+      "agent_action": "Call add_task(title='Buy groceries')",
+      "agent_response": "I've created a task titled 'Buy groceries'. Would you like to add any specific items to the description?"
+    },
+    {
+      "user_message": "Show me all my incomplete tasks",
+      "agent_action": "Call list_tasks(completed=False)",
+      "agent_response": "Here are your incomplete tasks:\n1. Buy groceries\n2. Finish project report\n3. Call dentist"
+    },
+    {
+      "user_message": "Mark 'Buy groceries' as complete",
+      "agent_action": "1. Call list_tasks() to find task ID\n2. Call complete_task(task_id='...')",
+      "agent_response": "Great! I've marked 'Buy groceries' as completed."
+    },
+    {
+      "user_message": "Change the title of my project report task to 'Submit Q1 Report'",
+      "agent_action": "1. Call list_tasks() to find task ID\n2. Call update_task(task_id='...', title='Submit Q1 Report')",
+      "agent_response": "I've updated your task title to 'Submit Q1 Report'."
+    },
+    {
+      "user_message": "Delete the dentist task",
+      "agent_action": "1. Call list_tasks() to find task ID\n2. Call delete_task(task_id='...')",
+      "agent_response": "I've deleted the 'Call dentist' task."
+    }
+  ],
+  "implementation_notes": {
+    "tool_registration": "Tools are registered with Gemini agent at FastAPI application startup using MCP SDK",
+    "user_id_passing": "user_id is extracted from JWT token and automatically passed to all tool calls via conversation context",
+    "task_identification": "When user refers to a task by title (e.g., 'the groceries task'), agent must first call list_tasks() to get task_id before calling update/complete/delete",
+    "ambiguity_handling": "If multiple tasks match user's description, agent should list them and ask user to clarify which one to operate on",
+    "error_messages": "Tool errors should be translated to user-friendly conversational responses (e.g., 'Task not found' → 'I couldn't find that task. Could you provide more details?')"
+  }
+}

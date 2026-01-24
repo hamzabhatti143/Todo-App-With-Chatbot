@@ -10,7 +10,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Plus, AlertCircle } from 'lucide-react';
+import { Plus, AlertCircle, Bot } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useTasks } from '@/hooks/use-tasks';
 import { TaskList } from '@/components/tasks/task-list';
@@ -38,6 +38,7 @@ export default function DashboardPage() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [fabMenuOpen, setFabMenuOpen] = useState(false);
 
   // Filter, search, and sort state
   const [filter, setFilter] = useState<FilterType>('all');
@@ -186,15 +187,25 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* Desktop Create Button */}
-          <Button
-            onClick={() => setIsFormOpen(true)}
-            size="lg"
-            className="hidden sm:flex bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            New Task
-          </Button>
+          {/* Desktop Action Buttons */}
+          <div className="hidden sm:flex gap-3">
+            <Button
+              onClick={() => router.push('/chat')}
+              size="lg"
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              <Bot className="h-5 w-5 mr-2" />
+              Perform Tasks With AI
+            </Button>
+            <Button
+              onClick={() => setIsFormOpen(true)}
+              size="lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              New Task
+            </Button>
+          </div>
         </div>
       </FadeIn>
 
@@ -233,22 +244,59 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* Floating Action Button (Mobile) */}
-      <motion.button
-        onClick={() => setIsFormOpen(true)}
-        className="fixed bottom-6 right-6 sm:hidden z-10 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{
-          type: 'spring',
-          stiffness: 500,
-          damping: 30,
-        }}
-      >
-        <Plus className="h-6 w-6" />
-      </motion.button>
+      {/* Floating Action Buttons (Mobile) */}
+      <div className="fixed bottom-6 right-6 sm:hidden z-10 flex flex-col items-end gap-3">
+        {/* Floating Menu Options */}
+        {fabMenuOpen && (
+          <>
+            <motion.button
+              onClick={() => {
+                router.push('/chat');
+                setFabMenuOpen(false);
+              }}
+              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-full shadow-lg"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ delay: 0.05 }}
+            >
+              <Bot className="h-5 w-5" />
+              <span className="text-sm font-medium">AI Chat</span>
+            </motion.button>
+            <motion.button
+              onClick={() => {
+                setIsFormOpen(true);
+                setFabMenuOpen(false);
+              }}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-full shadow-lg"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Plus className="h-5 w-5" />
+              <span className="text-sm font-medium">New Task</span>
+            </motion.button>
+          </>
+        )}
+
+        {/* Main FAB Button */}
+        <motion.button
+          onClick={() => setFabMenuOpen(!fabMenuOpen)}
+          className="w-14 h-14 bg-gradient-to-br from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full shadow-lg flex items-center justify-center"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          initial={{ scale: 0 }}
+          animate={{ scale: 1, rotate: fabMenuOpen ? 45 : 0 }}
+          transition={{
+            type: 'spring',
+            stiffness: 500,
+            damping: 30,
+          }}
+        >
+          <Plus className="h-6 w-6" />
+        </motion.button>
+      </div>
 
       {/* Task Form Modal */}
       <TaskForm

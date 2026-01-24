@@ -118,9 +118,49 @@ All specs in /specs folder:
 
 Always read relevant spec before implementing.
 
+## Features
+
+### AI Task Assistant (013-todo-ai-chatbot)
+Conversational AI interface for task management powered by Google Gemini 2.0 Flash.
+
+**Access**: `/chat` page (requires authentication)
+
+**Capabilities**:
+- **Natural language task creation**: "Add a task to buy groceries tomorrow"
+- **Task management**: List, complete, update, delete tasks through conversation
+- **Multi-part requests**: "Finish report by Friday, call client Monday" → Creates multiple tasks
+- **Conversation history**: Browse and resume previous conversations
+- **Smart understanding**: Extracts dates, priorities, generates concise titles
+
+**Technical Stack**:
+- Backend: Google Gemini 2.0 Flash + MCP (Model Context Protocol)
+- Rate limiting: 10 requests/minute per user
+- Context: Last 20 messages maintained
+- Storage: Conversations and messages in PostgreSQL
+
+**Quick Start**:
+```bash
+# Set Gemini API key
+echo "GEMINI_API_KEY=your-key-here" >> backend/.env
+
+# Run migrations
+cd backend && alembic upgrade head
+
+# Start server and navigate to /chat
+```
+
+See `specs/013-todo-ai-chatbot/IMPLEMENTATION_SUMMARY.md` for full documentation.
+
 ## Active Technologies
 - TypeScript 5.7.2 (strict mode) + Next.js 15.1.0 with App Router (012-animated-todo-frontend)
 - JWT tokens in localStorage, task state from backend API (012-animated-todo-frontend)
+- Google Gemini 2.0 Flash for AI chat (013-todo-ai-chatbot)
+- MCP protocol for AI tool calling (013-todo-ai-chatbot)
+- Python 3.11+ + SQLModel 0.0.22, psycopg2-binary 2.9.10, Alembic 1.14.0, pydantic-settings 2.7.0 (014-database-models)
+- Neon Serverless PostgreSQL 16 with SSL (014-database-models)
+- Python 3.11+ + FastAPI 0.115.6, SQLModel 0.0.22, Pydantic 2.10.4, google-generativeai 0.8.3, Uvicorn 0.34.0 (017-chat-api)
+- Neon Serverless PostgreSQL 16 with SQLModel ORM, Alembic migrations (017-chat-api)
 
 ## Recent Changes
+- 013-todo-ai-chatbot: Added AI-powered conversational task management with Gemini 2.0 Flash
 - 012-animated-todo-frontend: Added TypeScript 5.7.2 (strict mode) + Next.js 15.1.0 with App Router

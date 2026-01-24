@@ -45,7 +45,21 @@
       "Bash(python3:*)",
       "Bash(source .venv-wsl/bin/activate)",
       "Bash(pip install:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(if [ -d /mnt/d/todo-fullstack-web/specs/013-todo-ai-chatbot/checklists ])",
+      "Bash(then ls -la /mnt/d/todo-fullstack-web/specs/013-todo-ai-chatbot/checklists/)",
+      "Bash(else echo \"No checklists directory found\")",
+      "Bash(fi)",
+      "Bash(alembic current:*)",
+      "Bash([ -f .env ])",
+      "Bash([ -d tests ])",
+      "Bash(git rev-parse:*)",
+      "WebSearch",
+      "Bash(if [ -d \"/mnt/d/todo-fullstack-web/specs/016-gemini-agent/checklists\" ])",
+      "Bash(then find /mnt/d/todo-fullstack-web/specs/016-gemini-agent/checklists -name \"*.md\" -type f)",
+      "Bash(else echo \"No checklists directory\")",
+      "Bash(npx eslint:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }

@@ -1,17 +1,13 @@
-"""
-Pydantic Schemas Package
-"""
+"""Pydantic schemas package."""
 
-from app.schemas.user import UserCreate, UserResponse, UserLogin, Token
-from app.schemas.task import TaskBase, TaskCreate, TaskUpdate, TaskResponse
+from app.schemas.chat import ChatMessageRequest, ChatMessageResponse, TaskData
+from app.schemas.conversation import ConversationResponse
+from app.schemas.message import MessageResponse
 
 __all__ = [
-    "UserCreate",
-    "UserResponse",
-    "UserLogin",
-    "Token",
-    "TaskBase",
-    "TaskCreate",
-    "TaskUpdate",
-    "TaskResponse",
+    "ChatMessageRequest",
+    "ChatMessageResponse",
+    "TaskData",
+    "ConversationResponse",
+    "MessageResponse",
 ]

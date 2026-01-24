@@ -519,6 +519,7 @@ Delete a task permanently.
 3. **[003-user-auth](003-user-auth/spec.md)** - User registration and JWT authentication
 4. **[004-task-crud-api](004-task-crud-api/spec.md)** - Task CRUD API endpoints
 5. **[005-task-ui](005-task-ui/spec.md)** - Task management user interface
+6. **[013-todo-ai-chatbot](013-todo-ai-chatbot/spec.md)** - AI-powered conversational task management
 
 ### Feature Roadmap
 
@@ -528,6 +529,10 @@ Delete a task permanently.
 - ✅ Task CRUD operations
 - ✅ User isolation
 - ✅ Responsive mobile UI
+- ✅ AI task assistant with Gemini 2.0 Flash
+- ✅ Conversational interface for task management
+- ✅ Conversation history and context
+- ✅ Multi-part request handling
 
 #### Phase 2: Enhanced UX (Proposed)
 - ⏳ Task categories/tags

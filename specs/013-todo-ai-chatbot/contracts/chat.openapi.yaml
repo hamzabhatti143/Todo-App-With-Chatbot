@@ -1,0 +1,432 @@
+openapi: 3.0.3
+info:
+  title: Todo AI Chatbot API
+  description: RESTful API for conversational task management via AI agent
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://api.production.example.com
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /api/auth/login endpoint
+
+  schemas:
+    ChatMessageRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 5000
+          description: User's message content
+          example: "Add a task to buy groceries tomorrow"
+        conversation_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Optional conversation ID to continue existing conversation. If null, creates new conversation.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+    ChatMessageResponse:
+      type: object
+      required:
+        - conversation_id
+        - message_id
+        - role
+        - content
+        - created_at
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+          description: Conversation ID (new or existing)
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        message_id:
+          type: string
+          format: uuid
+          description: ID of the assistant's response message
+          example: "660e8400-e29b-41d4-a716-446655440001"
+        role:
+          type: string
+          enum: [assistant]
+          description: Role of the message sender (always 'assistant' for responses)
+          example: "assistant"
+        content:
+          type: string
+          description: AI agent's response message
+          example: "I've created a task titled 'Buy groceries' for tomorrow. Would you like me to add any specific items to the description?"
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when message was created
+          example: "2026-01-16T10:30:00Z"
+        task_data:
+          type: object
+          nullable: true
+          description: Optional task data if the agent created/modified tasks
+          properties:
+            tasks:
+              type: array
+              items:
+                $ref: '#/components/schemas/Task'
+
+    Conversation:
+      type: object
+      required:
+        - id
+        - user_id
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique conversation identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        user_id:
+          type: string
+          format: uuid
+          description: ID of the user who owns this conversation
+          example: "770e8400-e29b-41d4-a716-446655440002"
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when conversation was created
+          example: "2026-01-16T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when conversation was last updated
+          example: "2026-01-16T10:30:00Z"
+        message_count:
+          type: integer
+          description: Number of messages in the conversation
+          example: 12
+
+    Message:
+      type: object
+      required:
+        - id
+        - conversation_id
+        - role
+        - content
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique message identifier
+          example: "660e8400-e29b-41d4-a716-446655440001"
+        conversation_id:
+          type: string
+          format: uuid
+          description: ID of the conversation this message belongs to
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        role:
+          type: string
+          enum: [user, assistant]
+          description: Role of the message sender
+          example: "user"
+        content:
+          type: string
+          description: Message content
+          example: "Show me all my incomplete tasks"
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when message was created
+          example: "2026-01-16T10:25:00Z"
+
+    Task:
+      type: object
+      required:
+        - id
+        - title
+        - completed
+        - user_id
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique task identifier
+          example: "880e8400-e29b-41d4-a716-446655440003"
+        title:
+          type: string
+          maxLength: 200
+          description: Task title
+          example: "Buy groceries"
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+          description: Optional task description
+          example: "Milk, eggs, bread, vegetables"
+        completed:
+          type: boolean
+          description: Task completion status
+          example: false
+        user_id:
+          type: string
+          format: uuid
+          description: ID of the user who owns this task
+          example: "770e8400-e29b-41d4-a716-446655440002"
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when task was created
+          example: "2026-01-16T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when task was last updated
+          example: "2026-01-16T10:30:00Z"
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Human-readable error message
+          example: "Message content cannot be empty"
+
+paths:
+  /api/chat:
+    post:
+      summary: Send chat message
+      description: |
+        Send a message to the AI agent and receive a response. The agent will interpret the message,
+        perform any requested task operations via MCP tools, and return a conversational response.
+      operationId: sendChatMessage
+      tags:
+        - Chat
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatMessageRequest'
+            examples:
+              newConversation:
+                summary: Start new conversation
+                value:
+                  content: "Add a task to finish the project report by Friday"
+                  conversation_id: null
+              continueConversation:
+                summary: Continue existing conversation
+                value:
+                  content: "Mark that task as complete"
+                  conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Successful response with AI agent's reply
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessageResponse'
+              examples:
+                taskCreated:
+                  summary: Task created successfully
+                  value:
+                    conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                    message_id: "660e8400-e29b-41d4-a716-446655440001"
+                    role: "assistant"
+                    content: "I've created a task titled 'Finish project report' with a due context of Friday. Would you like me to add any specific details to the description?"
+                    created_at: "2026-01-16T10:30:00Z"
+                    task_data:
+                      tasks:
+                        - id: "880e8400-e29b-41d4-a716-446655440003"
+                          title: "Finish project report"
+                          description: "Due Friday"
+                          completed: false
+                          user_id: "770e8400-e29b-41d4-a716-446655440002"
+                          created_at: "2026-01-16T10:30:00Z"
+                          updated_at: "2026-01-16T10:30:00Z"
+        '400':
+          description: Bad request - Invalid message content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                emptyContent:
+                  summary: Empty message content
+                  value:
+                    detail: "Message content cannot be empty"
+                tooLong:
+                  summary: Message too long
+                  value:
+                    detail: "Message content cannot exceed 5000 characters"
+        '401':
+          description: Unauthorized - Missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Could not validate credentials"
+        '500':
+          description: Internal server error - AI agent or database failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                geminiError:
+                  summary: Gemini API error
+                  value:
+                    detail: "AI agent unavailable. Please try again later."
+                databaseError:
+                  summary: Database connection error
+                  value:
+                    detail: "Failed to save message. Please try again."
+
+  /api/conversations:
+    get:
+      summary: List user conversations
+      description: Retrieve all conversations for the authenticated user, ordered by most recent first
+      operationId: listConversations
+      tags:
+        - Conversations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+          description: Maximum number of conversations to return
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Number of conversations to skip (for pagination)
+      responses:
+        '200':
+          description: Successful response with conversation list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conversations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Conversation'
+                  total:
+                    type: integer
+                    description: Total number of conversations for the user
+              example:
+                conversations:
+                  - id: "550e8400-e29b-41d4-a716-446655440000"
+                    user_id: "770e8400-e29b-41d4-a716-446655440002"
+                    created_at: "2026-01-16T10:00:00Z"
+                    updated_at: "2026-01-16T10:30:00Z"
+                    message_count: 12
+                  - id: "551e8400-e29b-41d4-a716-446655440001"
+                    user_id: "770e8400-e29b-41d4-a716-446655440002"
+                    created_at: "2026-01-15T14:00:00Z"
+                    updated_at: "2026-01-15T15:30:00Z"
+                    message_count: 8
+                total: 25
+        '401':
+          description: Unauthorized - Missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/conversations/{conversation_id}:
+    get:
+      summary: Get conversation messages
+      description: Retrieve all messages in a specific conversation, ordered chronologically
+      operationId: getConversationMessages
+      tags:
+        - Conversations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Conversation ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Successful response with conversation messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conversation_id:
+                    type: string
+                    format: uuid
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
+              example:
+                conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                messages:
+                  - id: "660e8400-e29b-41d4-a716-446655440001"
+                    conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                    role: "user"
+                    content: "Add a task to buy groceries"
+                    created_at: "2026-01-16T10:25:00Z"
+                  - id: "661e8400-e29b-41d4-a716-446655440002"
+                    conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                    role: "assistant"
+                    content: "I've created a task titled 'Buy groceries'. Would you like to add any specific items?"
+                    created_at: "2026-01-16T10:25:30Z"
+        '401':
+          description: Unauthorized - Missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Conversation not found or not owned by authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Conversation not found"
+
+tags:
+  - name: Chat
+    description: Chat interface endpoints for conversational task management
+  - name: Conversations
+    description: Conversation history management endpoints

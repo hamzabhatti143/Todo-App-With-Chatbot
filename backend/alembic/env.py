@@ -17,7 +17,7 @@ load_dotenv()
 
 # Import models for autogenerate support
 from sqlmodel import SQLModel
-from app.models import User, Task
+from app.models import User, Task, Conversation, Message, MessageRole
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -7,6 +7,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { authApi, handleApiError } from '@/lib/api'
+import { appEvents, APP_EVENTS } from '@/lib/events'
 import type { UserLogin, UserCreate } from '@/types/user'
 
 export function useAuth() {
@@ -39,6 +40,10 @@ export function useAuth() {
 
       setIsAuthenticated(true)
       setUserId(userId)
+
+      // Emit login event to trigger data reload across app
+      appEvents.emit(APP_EVENTS.USER_LOGGED_IN)
+
       return { success: true }
     } catch (error) {
       return { success: false, error: handleApiError(error) }
@@ -62,6 +67,10 @@ export function useAuth() {
     localStorage.removeItem('user_id')
     setIsAuthenticated(false)
     setUserId(null)
+
+    // Emit logout event to clear data across app
+    appEvents.emit(APP_EVENTS.USER_LOGGED_OUT)
+
     router.push('/signin')
   }
 

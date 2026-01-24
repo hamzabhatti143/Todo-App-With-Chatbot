@@ -1,0 +1,374 @@
+openapi: 3.1.0
+info:
+  title: Chat API
+  description: |
+    Stateless chat endpoint for conversational task management with TodoBot AI agent.
+
+    This API provides a RESTful interface for sending chat messages and receiving
+    AI-generated responses. The agent integrates with MCP task tools to perform
+    task management operations through natural language.
+  version: 1.0.0
+  contact:
+    name: Todo Full-Stack Web
+    url: https://github.com/your-org/todo-fullstack-web
+
+servers:
+  - url: http://localhost:8000
+    description: Development server
+  - url: https://api.yourdomain.com
+    description: Production server
+
+paths:
+  /api/chat:
+    post:
+      summary: Send chat message
+      description: |
+        Send a natural language message to the TodoBot AI agent. The agent will
+        interpret the message, execute any necessary task operations via MCP tools,
+        and return a conversational response.
+
+        **Stateless Design**: All conversation state is persisted in the database.
+        The server maintains no in-memory session state, enabling horizontal scaling.
+
+        **Conversation Flow**:
+        1. If `conversation_id` is null, a new conversation is created
+        2. User message is saved to database before agent invocation
+        3. Last 20 messages retrieved as context for agent
+        4. TodoBot agent processes message with context and available MCP tools
+        5. Assistant response is saved to database
+        6. Response returned to client with conversation_id and tool execution details
+
+        **Rate Limiting**: 10 requests per minute per user
+
+      operationId: sendChatMessage
+      tags:
+        - chat
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatMessageRequest'
+            examples:
+              newConversation:
+                summary: Start new conversation
+                value:
+                  content: "Add buy groceries tomorrow"
+                  conversation_id: null
+              continueConversation:
+                summary: Continue existing conversation
+                value:
+                  content: "Show me all my tasks"
+                  conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+              multiPartRequest:
+                summary: Multiple tasks in one message
+                value:
+                  content: "Add three tasks: buy milk, call mom, and finish report by Friday"
+                  conversation_id: null
+
+      responses:
+        '200':
+          description: Successful response with AI-generated message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessageResponse'
+              examples:
+                taskCreated:
+                  summary: Task created successfully
+                  value:
+                    conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                    message_id: "880e8400-e29b-41d4-a716-446655440003"
+                    role: "assistant"
+                    content: "I've created a task titled 'Buy groceries' for tomorrow. Would you like me to add any specific items to the description?"
+                    created_at: "2026-01-16T10:00:05Z"
+                    task_data:
+                      tasks:
+                        - result: "Task created: Buy groceries (ID: aa0e8400-e29b-41d4-a716-446655440005)"
+                listTasks:
+                  summary: Tasks listed
+                  value:
+                    conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+                    message_id: "bb0e8400-e29b-41d4-a716-446655440006"
+                    role: "assistant"
+                    content: "Here are your tasks:\\n◯ Buy groceries (pending)\\n◯ Call mom (pending)"
+                    created_at: "2026-01-16T10:01:05Z"
+                    task_data: null
+
+        '400':
+          description: Bad request - invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Validation error: Message content cannot be empty"
+
+        '401':
+          description: Unauthorized - missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Not authenticated"
+
+        '404':
+          description: Not found - conversation doesn't exist or doesn't belong to user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Conversation 550e8400-e29b-41d4-a716-446655440000 not found"
+
+        '422':
+          description: Unprocessable entity - validation errors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        loc:
+                          type: array
+                          items:
+                            type: string
+                        msg:
+                          type: string
+                        type:
+                          type: string
+              example:
+                detail:
+                  - loc: ["body", "content"]
+                    msg: "ensure this value has at least 1 characters"
+                    type: "value_error.any_str.min_length"
+
+        '429':
+          description: Too many requests - rate limit exceeded
+          headers:
+            X-RateLimit-Limit:
+              description: Maximum requests allowed per time window
+              schema:
+                type: integer
+              example: 10
+            X-RateLimit-Remaining:
+              description: Requests remaining in current time window
+              schema:
+                type: integer
+              example: 0
+            X-RateLimit-Reset:
+              description: Unix timestamp when rate limit resets
+              schema:
+                type: integer
+              example: 1642348800
+            Retry-After:
+              description: Seconds until next request allowed
+              schema:
+                type: integer
+              example: 45
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Rate limit exceeded: 10 per 1 minute"
+
+        '500':
+          description: Internal server error - agent failure or database error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                agentError:
+                  summary: AI agent unavailable
+                  value:
+                    detail: "AI agent unavailable. Please try again later."
+                databaseError:
+                  summary: Database error
+                  value:
+                    detail: "An error occurred processing your message. Please try again."
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained from `/api/auth/login` endpoint.
+
+        The token contains the user ID in the `sub` claim and is used to:
+        1. Authenticate the user
+        2. Verify conversation ownership
+        3. Scope all task operations to the authenticated user
+
+        Include in request header: `Authorization: Bearer <token>`
+
+  schemas:
+    ChatMessageRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 5000
+          description: |
+            User's message content in natural language.
+
+            The message can be:
+            - A command ("Add buy groceries")
+            - A question ("Show my tasks")
+            - Multi-part request ("Add milk and call mom")
+            - Conversational ("Thanks, that's all for now")
+
+            Examples of supported commands:
+            - "Add [task description]"
+            - "Show/List my tasks"
+            - "Complete [task reference]"
+            - "Delete [task reference]"
+            - "Update [task reference] to [new description]"
+          example: "Add buy groceries tomorrow"
+
+        conversation_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: |
+            UUID of an existing conversation to continue.
+
+            - If null or omitted: creates a new conversation
+            - If provided: continues the specified conversation
+            - Must belong to the authenticated user (verified via JWT)
+
+            The conversation_id enables multi-turn dialogues where the agent
+            can reference previous messages for context.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+      example:
+        content: "Add buy groceries tomorrow"
+        conversation_id: null
+
+    ChatMessageResponse:
+      type: object
+      required:
+        - conversation_id
+        - message_id
+        - role
+        - content
+        - created_at
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+          description: |
+            UUID of the conversation (new or existing).
+
+            Use this value in subsequent requests to continue the conversation.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+        message_id:
+          type: string
+          format: uuid
+          description: |
+            UUID of the assistant's response message.
+
+            Useful for tracking individual messages in conversation history.
+          example: "880e8400-e29b-41d4-a716-446655440003"
+
+        role:
+          type: string
+          enum: ["assistant"]
+          description: |
+            Role of the message sender.
+
+            Always "assistant" for chat responses (user messages not returned).
+          example: "assistant"
+
+        content:
+          type: string
+          description: |
+            AI-generated response text.
+
+            The response is conversational and may include:
+            - Task operation confirmations
+            - Task lists with status indicators (◯ pending, ✓ completed)
+            - Follow-up questions
+            - Error explanations in user-friendly language
+          example: "I've created a task titled 'Buy groceries' for tomorrow. Would you like me to add any specific items to the description?"
+
+        created_at:
+          type: string
+          format: date-time
+          description: |
+            ISO 8601 timestamp when the message was created.
+          example: "2026-01-16T10:00:05Z"
+
+        task_data:
+          type: object
+          nullable: true
+          description: |
+            Optional task data if the agent created or modified tasks.
+
+            Present only when `add_task` tool was successfully executed.
+            Can be used by frontend to update task list optimistically.
+          properties:
+            tasks:
+              type: array
+              items:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: |
+                      Human-readable result string from task tool execution.
+
+                      Format: "Task created: [title] (ID: [uuid])"
+                    example: "Task created: Buy groceries (ID: aa0e8400-e29b-41d4-a716-446655440005)"
+          example:
+            tasks:
+              - result: "Task created: Buy groceries (ID: aa0e8400-e29b-41d4-a716-446655440005)"
+
+      example:
+        conversation_id: "550e8400-e29b-41d4-a716-446655440000"
+        message_id: "880e8400-e29b-41d4-a716-446655440003"
+        role: "assistant"
+        content: "I've created a task titled 'Buy groceries' for tomorrow."
+        created_at: "2026-01-16T10:00:05Z"
+        task_data:
+          tasks:
+            - result: "Task created: Buy groceries (ID: aa0e8400-...)"
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: |
+            User-friendly error message.
+
+            Error messages do not expose internal implementation details
+            for security reasons. Full error context is logged server-side.
+          example: "Conversation not found"
+
+      example:
+        detail: "An error occurred processing your message. Please try again."
+
+tags:
+  - name: chat
+    description: |
+      Conversational task management with TodoBot AI agent.
+
+      The chat API provides a natural language interface for task management,
+      powered by Google Gemini 2.0 Flash and integrated with MCP task tools.
