@@ -3,7 +3,7 @@
 import logging
 import time
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlmodel import Session
 from sqlalchemy.exc import OperationalError, DBAPIError
 
@@ -22,9 +22,8 @@ router = APIRouter()
 
 
 @router.post("/chat", response_model=ChatMessageResponse)
-@limiter.limit("10/minute")  # Rate limiting: 10 requests per minute per user
 async def send_chat_message(
-    request: ChatMessageRequest,
+    chat_request: ChatMessageRequest,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
@@ -48,11 +47,14 @@ async def send_chat_message(
     # Capture start time for performance monitoring
     start_time = time.time()
 
+    logger.info(f"Chat endpoint called by user {current_user.id}")
+    logger.info(f"Message content: {chat_request.content[:100]}")
+
     try:
         # Step 1: Get or create conversation
-        if request.conversation_id:
+        if chat_request.conversation_id:
             conversation = ConversationService.get_conversation(
-                conversation_id=request.conversation_id,
+                conversation_id=chat_request.conversation_id,
                 user_id=current_user.id,
                 session=session,
             )
@@ -60,7 +62,7 @@ async def send_chat_message(
             if not conversation:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Conversation {request.conversation_id} not found",
+                    detail=f"Conversation {chat_request.conversation_id} not found",
                 )
         else:
             # Create new conversation
@@ -73,7 +75,7 @@ async def send_chat_message(
         user_message = ConversationService.save_message(
             conversation_id=conversation.id,
             role=MessageRole.USER,
-            content=request.content,
+            content=chat_request.content,
             session=session,
         )
 
@@ -102,7 +104,7 @@ async def send_chat_message(
         # Step 5: Create agent request
         agent_request = AgentRequest(
             user_id=str(current_user.id),
-            message=request.content,
+            message=chat_request.content,
             conversation_history=history_for_agent if history_for_agent else None,
         )
 
@@ -125,11 +127,34 @@ async def send_chat_message(
                         "result": tool_call.result
                     })
 
-        except Exception as agent_error:
-            logger.error(f"TodoBot agent error: {agent_error}")
+        except ValueError as config_error:
+            # Configuration errors (missing API key, etc.)
+            logger.error(f"TodoBot configuration error: {config_error}")
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="AI agent unavailable. Please try again later.",
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="AI assistant is not configured. Please contact support.",
+            )
+        except HTTPException:
+            # Re-raise HTTP exceptions as-is
+            raise
+        except Exception as agent_error:
+            # Log full error for debugging
+            logger.error(f"TodoBot agent error: {agent_error}", exc_info=True)
+
+            # Check for specific error types and provide helpful messages
+            error_message = str(agent_error).lower()
+            if "api key" in error_message or "authentication" in error_message:
+                detail = "AI assistant authentication failed. Please contact support."
+            elif "quota" in error_message or "rate limit" in error_message:
+                detail = "AI assistant is temporarily unavailable due to high demand. Please try again in a few minutes."
+            elif "timeout" in error_message:
+                detail = "AI assistant request timed out. Please try again with a shorter message."
+            else:
+                detail = "AI assistant is temporarily unavailable. Please try again later."
+
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=detail,
             )
 
         # Step 7: Save assistant response to database
@@ -188,7 +213,11 @@ async def send_chat_message(
     except Exception as e:
         # Handle unexpected errors
         logger.error(f"Unexpected error in chat endpoint: {e}", exc_info=True)
+        logger.error(f"Error type: {type(e).__name__}")
+        logger.error(f"Error args: {e.args}")
+        import traceback
+        logger.error(f"Full traceback:\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred processing your message. Please try again.",
+            detail=f"An error occurred processing your message: {str(e)}",
         )

@@ -87,8 +87,8 @@ export function TaskCard({ task, onToggleComplete, onEdit, onDelete }: TaskCardP
         onDragEnd={handleDragEnd}
         style={{ x, opacity }}
         className={cn(
-          'relative bg-white dark:bg-gray-800 rounded-lg p-4',
-          'border border-gray-200 dark:border-gray-700',
+          'relative bg-slate-800/90 rounded-lg p-4',
+          'border border-slate-700/50',
           'shadow-sm transition-shadow',
           'cursor-pointer'
         )}
@@ -110,8 +110,8 @@ export function TaskCard({ task, onToggleComplete, onEdit, onDelete }: TaskCardP
               className={cn(
                 'text-base font-medium transition-colors',
                 task.completed
-                  ? 'text-gray-400 dark:text-gray-500'
-                  : 'text-gray-900 dark:text-gray-100'
+                  ? 'text-gray-500'
+                  : 'text-gray-100'
               )}
               animate={{
                 textDecoration: task.completed ? 'line-through' : 'none',
@@ -126,8 +126,8 @@ export function TaskCard({ task, onToggleComplete, onEdit, onDelete }: TaskCardP
                 className={cn(
                   'mt-1 text-sm transition-colors',
                   task.completed
-                    ? 'text-gray-400 dark:text-gray-600'
-                    : 'text-gray-600 dark:text-gray-400'
+                    ? 'text-gray-600'
+                    : 'text-gray-400'
                 )}
                 animate={{
                   textDecoration: task.completed ? 'line-through' : 'none',
@@ -138,7 +138,7 @@ export function TaskCard({ task, onToggleComplete, onEdit, onDelete }: TaskCardP
               </motion.p>
             )}
 
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
+            <p className="mt-2 text-xs text-gray-500">
               {formatRelativeTime(task.created_at)}
             </p>
           </div>
@@ -167,7 +167,7 @@ export function TaskCard({ task, onToggleComplete, onEdit, onDelete }: TaskCardP
               variant="ghost"
               size="sm"
               onClick={handleDelete}
-              className="h-11 w-11 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+              className="h-11 w-11 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/20"
               aria-label="Delete task"
             >
               <Trash2 className="h-4 w-4" />

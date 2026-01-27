@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { ChatProvider } from "@/contexts/ChatContext";
 import { ChatInterface } from "@/components/chat/ChatInterface";
 import { ConversationSidebar } from "@/components/chat/ConversationSidebar";
-import { LoadingSpinner } from "@/components/chat/LoadingSpinner";
+import { PageLoading } from "@/components/ui/loading";
 import { ArrowLeft, Menu, X } from "lucide-react";
 import Link from "next/link";
 
@@ -44,11 +44,7 @@ export default function ChatPage() {
   }, [isAuthenticated, authLoading, userId, router]);
 
   if (loading || authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-950">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
+    return <PageLoading text="Loading Chat..." />;
   }
 
   if (!userIdState) {
@@ -56,26 +52,29 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-950">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Header with Back Button and Mobile Menu Toggle */}
-      <div className="p-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-between">
+      <div className="p-4 border-b glass-navbar flex items-center justify-between backdrop-blur-xl bg-slate-900/95 border-slate-700/50">
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          className="inline-flex items-center gap-2 text-white/90 hover:text-white font-medium transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="hidden sm:inline">Back to Dashboard</span>
           <span className="sm:hidden">Back</span>
         </Link>
 
-        {/* Mobile menu toggle */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="md:hidden p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg"
-          aria-label="Toggle conversation list"
-        >
-          {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        {/* Right side controls */}
+        <div className="flex items-center gap-2">
+          {/* Mobile menu toggle */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="md:hidden p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+            aria-label="Toggle conversation list"
+          >
+            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Main Content Area */}

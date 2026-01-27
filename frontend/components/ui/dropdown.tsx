@@ -36,8 +36,8 @@ export function DropdownContent({
         sideOffset={sideOffset}
         className={cn(
           'z-50 min-w-[12rem] overflow-hidden rounded-lg',
-          'bg-white dark:bg-gray-800',
-          'border border-gray-200 dark:border-gray-700',
+          'bg-slate-800',
+          'border border-slate-700',
           'shadow-lg',
           'animate-[fadeIn_0.2s_ease-out]',
           className
@@ -69,9 +69,9 @@ export function DropdownItem({ className, inset, ...props }: DropdownItemProps) 
       className={cn(
         'relative flex cursor-pointer select-none items-center rounded-md px-3 py-2 text-sm outline-none',
         'transition-colors duration-150',
-        'text-gray-700 dark:text-gray-300',
-        'hover:bg-gray-100 dark:hover:bg-gray-700',
-        'focus:bg-gray-100 dark:focus:bg-gray-700',
+        'text-gray-300',
+        'hover:bg-slate-700',
+        'focus:bg-slate-700',
         'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         inset && 'pl-8',
         className
@@ -91,9 +91,9 @@ export function DropdownCheckboxItem({ className, children, ...props }: Dropdown
       className={cn(
         'relative flex cursor-pointer select-none items-center rounded-md py-2 pl-8 pr-3 text-sm outline-none',
         'transition-colors duration-150',
-        'text-gray-700 dark:text-gray-300',
-        'hover:bg-gray-100 dark:hover:bg-gray-700',
-        'focus:bg-gray-100 dark:focus:bg-gray-700',
+        'text-gray-300',
+        'hover:bg-slate-700',
+        'focus:bg-slate-700',
         'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         className
       )}
@@ -119,9 +119,9 @@ export function DropdownRadioItem({ className, children, ...props }: DropdownRad
       className={cn(
         'relative flex cursor-pointer select-none items-center rounded-md py-2 pl-8 pr-3 text-sm outline-none',
         'transition-colors duration-150',
-        'text-gray-700 dark:text-gray-300',
-        'hover:bg-gray-100 dark:hover:bg-gray-700',
-        'focus:bg-gray-100 dark:focus:bg-gray-700',
+        'text-gray-300',
+        'hover:bg-slate-700',
+        'focus:bg-slate-700',
         'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         className
       )}
@@ -140,7 +140,7 @@ export function DropdownRadioItem({ className, children, ...props }: DropdownRad
 export function DropdownLabel({ className, ...props }: RadixDropdown.DropdownMenuLabelProps) {
   return (
     <RadixDropdown.Label
-      className={cn('px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400', className)}
+      className={cn('px-3 py-2 text-xs font-semibold text-gray-400', className)}
       {...props}
     />
   );
@@ -149,7 +149,7 @@ export function DropdownLabel({ className, ...props }: RadixDropdown.DropdownMen
 export function DropdownSeparator({ className, ...props }: RadixDropdown.DropdownMenuSeparatorProps) {
   return (
     <RadixDropdown.Separator
-      className={cn('-mx-1 my-1 h-px bg-gray-200 dark:bg-gray-700', className)}
+      className={cn('-mx-1 my-1 h-px bg-slate-700', className)}
       {...props}
     />
   );
@@ -172,10 +172,10 @@ export function DropdownSubTrigger({
       className={cn(
         'flex cursor-pointer select-none items-center rounded-md px-3 py-2 text-sm outline-none',
         'transition-colors duration-150',
-        'text-gray-700 dark:text-gray-300',
-        'hover:bg-gray-100 dark:hover:bg-gray-700',
-        'focus:bg-gray-100 dark:focus:bg-gray-700',
-        'data-[state=open]:bg-gray-100 dark:data-[state=open]:bg-gray-700',
+        'text-gray-300',
+        'hover:bg-slate-700',
+        'focus:bg-slate-700',
+        'data-[state=open]:bg-slate-700',
         inset && 'pl-8',
         className
       )}
@@ -195,8 +195,8 @@ export function DropdownSubContent({
     <RadixDropdown.SubContent
       className={cn(
         'z-50 min-w-[12rem] overflow-hidden rounded-lg',
-        'bg-white dark:bg-gray-800',
-        'border border-gray-200 dark:border-gray-700',
+        'bg-slate-800',
+        'border border-slate-700',
         'shadow-lg',
         'p-1',
         className

@@ -1,11 +1,11 @@
 """
-TodoBot: Gemini AI Agent for Task Management
+TodoBot: AI Agent for Task Management using OpenAI Agents SDK
 
-This module implements a conversational AI agent that enables natural language
-task management through integration with MCP Task Server tools.
+This module implements a conversational AI agent using the OpenAI Agents SDK
+with GPT models for natural language task management.
 
 Usage:
-    from app.agent import TodoBot, AgentRequest, AgentResponse
+    from app.agent_new import TodoBot, AgentRequest, AgentResponse
 
     agent = TodoBot()
     request = AgentRequest(
@@ -16,11 +16,12 @@ Usage:
 """
 
 import logging
-from typing import List, Dict, Any, Optional
+from typing import Optional, List
 from uuid import UUID
 
 from pydantic import BaseModel, Field, validator
-import google.generativeai as genai
+from openai import AsyncOpenAI
+from agents import Agent, OpenAIChatCompletionsModel, Runner, function_tool, set_tracing_disabled, RunContextWrapper
 
 from app.config import settings
 from app.mcp_server.tools import (
@@ -35,20 +36,45 @@ logger = logging.getLogger(__name__)
 
 
 # ============================================================================
-# Configuration Models
+# Utility Functions
 # ============================================================================
 
-class AgentConfig(BaseModel):
-    """Configuration for TodoBot agent initialization."""
+def remove_emojis(text: str) -> str:
+    """
+    Remove emoji characters from text to avoid encoding issues.
 
-    model_name: str = Field(
-        default="gemini-2.0-flash",  # Changed from -exp to stable version
-        description="Gemini model identifier"
+    This is necessary for Windows console output which uses cp1252 encoding
+    and cannot handle emoji characters.
+
+    Args:
+        text: Input text that may contain emojis
+
+    Returns:
+        Text with emojis removed
+    """
+    import re
+    # Remove emoji characters (ranges cover most common emojis)
+    emoji_pattern = re.compile(
+        "["
+        "\U0001F600-\U0001F64F"  # emoticons
+        "\U0001F300-\U0001F5FF"  # symbols & pictographs
+        "\U0001F680-\U0001F6FF"  # transport & map symbols
+        "\U0001F1E0-\U0001F1FF"  # flags (iOS)
+        "\U00002702-\U000027B0"
+        "\U000024C2-\U0001F251"
+        "]+",
+        flags=re.UNICODE
     )
-    temperature: float = Field(default=0.7, ge=0.0, le=2.0)
-    max_output_tokens: int = Field(default=2048, gt=0, le=8192)
-    max_conversation_messages: int = Field(default=20, gt=0)
-    timeout_seconds: int = Field(default=30, gt=0)
+    return emoji_pattern.sub('', text)
+
+
+# ============================================================================
+# Context Class for Dependency Injection
+# ============================================================================
+
+class TodoBotContext(BaseModel):
+    """Context object passed to all tools via dependency injection."""
+    user_id: str
 
 
 # ============================================================================
@@ -94,7 +120,7 @@ class ToolCall(BaseModel):
     """Tool call executed by agent."""
 
     name: str
-    arguments: Dict[str, Any]
+    arguments: dict
     result: str
     success: bool
 
@@ -108,43 +134,154 @@ class AgentResponse(BaseModel):
 
 
 # ============================================================================
+# Tool Definitions with @function_tool Decorator
+# ============================================================================
+
+@function_tool
+async def tool_add_task(wrapper: RunContextWrapper[TodoBotContext], title: str, description: str = "") -> str:
+    """
+    Create a new task for the user.
+
+    Args:
+        title: Task title (1-200 characters)
+        description: Optional task description (max 1000 characters)
+
+    Returns:
+        Success message with task details
+    """
+    try:
+        user_id = wrapper.context.user_id
+        result = await add_task(user_id=user_id, title=title, description=description)
+        return result
+    except Exception as e:
+        logger.error(f"Error in tool_add_task: {e}")
+        return f"Failed to create task: {str(e)}"
+
+
+@function_tool
+async def tool_list_tasks(wrapper: RunContextWrapper[TodoBotContext], status: str = "all") -> str:
+    """
+    Get the user's tasks with optional status filter.
+
+    Args:
+        status: Filter tasks by status - "all", "pending", or "completed"
+
+    Returns:
+        Formatted list of tasks
+    """
+    try:
+        user_id = wrapper.context.user_id
+        result = await list_tasks(user_id=user_id, status=status)
+        return result
+    except Exception as e:
+        logger.error(f"Error in tool_list_tasks: {e}")
+        return f"Failed to list tasks: {str(e)}"
+
+
+@function_tool
+async def tool_complete_task(wrapper: RunContextWrapper[TodoBotContext], task_id: str) -> str:
+    """
+    Mark a task as completed.
+
+    Args:
+        task_id: UUID of the task to complete
+
+    Returns:
+        Success message
+    """
+    try:
+        user_id = wrapper.context.user_id
+        result = await complete_task(user_id=user_id, task_id=task_id)
+        return result
+    except Exception as e:
+        logger.error(f"Error in tool_complete_task: {e}")
+        return f"Failed to complete task: {str(e)}"
+
+
+@function_tool
+async def tool_delete_task(wrapper: RunContextWrapper[TodoBotContext], task_id: str) -> str:
+    """
+    Delete a task permanently.
+
+    Args:
+        task_id: UUID of the task to delete
+
+    Returns:
+        Success message
+    """
+    try:
+        user_id = wrapper.context.user_id
+        result = await delete_task(user_id=user_id, task_id=task_id)
+        return result
+    except Exception as e:
+        logger.error(f"Error in tool_delete_task: {e}")
+        return f"Failed to delete task: {str(e)}"
+
+
+@function_tool
+async def tool_update_task(wrapper: RunContextWrapper[TodoBotContext], task_id: str, title: str = "", description: str = "") -> str:
+    """
+    Update a task's title or description.
+
+    Args:
+        task_id: UUID of the task to update
+        title: New title (optional)
+        description: New description (optional)
+
+    Returns:
+        Success message with updated task details
+    """
+    try:
+        user_id = wrapper.context.user_id
+        result = await update_task(user_id=user_id, task_id=task_id, title=title, description=description)
+        return result
+    except Exception as e:
+        logger.error(f"Error in tool_update_task: {e}")
+        return f"Failed to update task: {str(e)}"
+
+
+# ============================================================================
 # System Instructions
 # ============================================================================
 
 SYSTEM_INSTRUCTIONS = """You are TodoBot, a friendly AI assistant for task management.
 
 **Your Capabilities**:
-You have 5 tools: add_task, list_tasks, complete_task, delete_task, update_task
+You have 5 tools to help users manage their tasks:
+- tool_add_task: Create new tasks
+- tool_list_tasks: View tasks (all, pending, or completed)
+- tool_complete_task: Mark tasks as done
+- tool_delete_task: Remove tasks
+- tool_update_task: Modify task details
 
 **Guidelines**:
 
-1. **Creating Tasks** (add_task):
+1. **Creating Tasks** (tool_add_task):
    - Extract clear, concise titles from user input
    - Use description for additional details
-   - Confirm with ✅ emoji
+   - Confirm creation
 
-2. **Viewing Tasks** (list_tasks):
+2. **Viewing Tasks** (tool_list_tasks):
    - Default to "all" status
    - Use "pending" or "completed" when user specifies
-   - Present clearly with ◯ (pending) and ✓ (completed)
 
-3. **Completing Tasks** (complete_task):
-   - If user references by title, call list_tasks first to find task_id
+3. **Completing Tasks** (tool_complete_task):
+   - If user references by title, call tool_list_tasks first to find task_id
    - Match titles fuzzy and case-insensitive
    - Ask for clarification if multiple matches
-   - Confirm with ✓ emoji
+   - Confirm completion
 
-4. **Deleting Tasks** (delete_task):
+4. **Deleting Tasks** (tool_delete_task):
    - Same pattern as completing: list first if needed
    - Confirm deletion
 
-5. **Updating Tasks** (update_task):
+5. **Updating Tasks** (tool_update_task):
    - Same pattern: list first if referenced by title
    - Confirm update with new details
 
 **Task Identification Rules**:
 When user references task by title (not UUID):
-1. Call list_tasks to get all user tasks
+1. Call tool_list_tasks to get all user tasks
 2. Match reference to titles (fuzzy, case-insensitive)
 3. Single match: use that task_id
 4. Multiple matches: ask which one
@@ -152,151 +289,15 @@ When user references task by title (not UUID):
 
 **Style**:
 - Friendly and concise
-- Use emojis sparingly (✅ ◯ ✓)
 - Ask clarifying questions when unclear
 - No technical jargon in errors
 
 **Important**:
-- Only access tasks for the authenticated user_id
-- Never invent task IDs - always call list_tasks first
+- User authentication is handled automatically - you don't need to specify user_id
+- Only the authenticated user's tasks are accessible
+- Never invent task IDs - always call tool_list_tasks first
 - Always confirm successful operations
 """
-
-
-# ============================================================================
-# MCP Tool Declarations (Gemini Format)
-# ============================================================================
-
-def _create_mcp_tools():
-    """Create MCP tool declarations in Gemini format."""
-    return genai.protos.Tool(
-        function_declarations=[
-            genai.protos.FunctionDeclaration(
-                name='add_task',
-                description=(
-                    'Create a new task. Use when user wants to add, create, or '
-                    'remember something. Examples: "add buy groceries", '
-                    '"create task to call mom"'
-                ),
-                parameters=genai.protos.Schema(
-                    type=genai.protos.Type.OBJECT,
-                    properties={
-                        'user_id': genai.protos.Schema(
-                            type=genai.protos.Type.STRING,
-                            description='UUID of user (from context)'
-                        ),
-                        'title': genai.protos.Schema(
-                            type=genai.protos.Type.STRING,
-                            description='Task title (1-200 chars)'
-                        ),
-                        'description': genai.protos.Schema(
-                            type=genai.protos.Type.STRING,
-                            description='Optional description (max 1000 chars)'
-                        )
-                    },
-                    required=['user_id', 'title']
-                )
-            ),
-            genai.protos.FunctionDeclaration(
-                name='list_tasks',
-                description=(
-                    'Get user\'s tasks with optional filter. Use when user wants '
-                    'to see, show, list tasks. Examples: "show my tasks", '
-                    '"what\'s pending"'
-                ),
-                parameters=genai.protos.Schema(
-                    type=genai.protos.Type.OBJECT,
-                    properties={
-                        'user_id': genai.protos.Schema(
-                            type=genai.protos.Type.STRING,
-                            description='UUID of user'
-                        ),
-                        'status': genai.protos.Schema(
-                            type=genai.protos.Type.STRING,
-                            description='Filter: "all", "pending", or "completed"'
-                        )
-                    },
-                    required=['user_id']
-                )
-            ),
-            genai.protos.FunctionDeclaration(
-                name='complete_task',
-                description=(
-                    'Mark task as done. Use when user wants to complete, finish '
-                    'a task. If user references by title, call list_tasks first '
-                    'to find task_id.'
-                ),
-                parameters=genai.protos.Schema(
-                    type=genai.protos.Type.OBJECT,
-                    properties={
-                        'user_id': genai.protos.Schema(
-                            type=genai.protos.Type.STRING
-                        ),
-                        'task_id': genai.protos.Schema(
-                            type=genai.protos.Type.STRING,
-                            description='UUID of task'
-                        )
-                    },
-                    required=['user_id', 'task_id']
-                )
-            ),
-            genai.protos.FunctionDeclaration(
-                name='delete_task',
-                description=(
-                    'Remove task permanently. Use when user wants to delete, '
-                    'remove, cancel. If referenced by title, call list_tasks first.'
-                ),
-                parameters=genai.protos.Schema(
-                    type=genai.protos.Type.OBJECT,
-                    properties={
-                        'user_id': genai.protos.Schema(type=genai.protos.Type.STRING),
-                        'task_id': genai.protos.Schema(type=genai.protos.Type.STRING)
-                    },
-                    required=['user_id', 'task_id']
-                )
-            ),
-            genai.protos.FunctionDeclaration(
-                name='update_task',
-                description=(
-                    'Modify task title/description. Use when user wants to '
-                    'update, change, edit, rename. If referenced by title, '
-                    'call list_tasks first.'
-                ),
-                parameters=genai.protos.Schema(
-                    type=genai.protos.Type.OBJECT,
-                    properties={
-                        'user_id': genai.protos.Schema(type=genai.protos.Type.STRING),
-                        'task_id': genai.protos.Schema(type=genai.protos.Type.STRING),
-                        'title': genai.protos.Schema(type=genai.protos.Type.STRING),
-                        'description': genai.protos.Schema(type=genai.protos.Type.STRING)
-                    },
-                    required=['user_id', 'task_id']
-                )
-            )
-        ]
-    )
-
-
-# ============================================================================
-# Error Messages
-# ============================================================================
-
-ERROR_MESSAGES = {
-    "rate_limit": "⚠️ Too many requests. Please try again in a moment.",
-    "api_unavailable": "⚠️ AI service unavailable. Try again later.",
-    "api_timeout": "⚠️ Request timed out. Please try again.",
-    "api_error": "⚠️ Error processing request. Try again.",
-    "task_not_found": "❌ Couldn't find task '{reference}'.",
-    "permission_denied": "🔒 Permission denied.",
-    "validation_error": "❌ Invalid input: {details}",
-    "database_error": "⚠️ Database error. Try again.",
-    "empty_input": "🤔 Please provide more details.",
-    "unclear_intent": (
-        "🤔 Not sure what to do. Try:\n"
-        "• Add a task\n• List tasks\n• Complete a task\n"
-        "• Delete a task\n• Update a task"
-    ),
-}
 
 
 # ============================================================================
@@ -307,50 +308,54 @@ class TodoBot:
     """
     Conversational AI agent for natural language task management.
 
-    Integrates with MCP Task Server tools to provide friendly
-    interface for creating, viewing, completing, deleting, and
-    updating tasks.
+    Uses OpenAI Agents SDK with GPT models for understanding and
+    responding to natural language task management requests.
     """
 
-    def __init__(self, config: Optional[AgentConfig] = None):
-        """
-        Initialize TodoBot agent.
+    def __init__(self):
+        """Initialize TodoBot agent with OpenAI Agents SDK."""
+        self.agent = None
+        self._initialize_agent()
 
-        Args:
-            config: Optional agent configuration
-        """
-        # Use settings from config.py if no config provided
-        if config is None:
-            config = AgentConfig(
-                model_name=settings.gemini_model,
-                temperature=settings.gemini_temperature,
-                max_output_tokens=settings.gemini_max_tokens,
-                timeout_seconds=settings.gemini_timeout,
-            )
-        self.config = config
-        self.client: Optional[genai.GenerativeModel] = None
-        self._initialize_client()
-
-    def _initialize_client(self) -> None:
-        """Initialize Gemini client with tools."""
+    def _initialize_agent(self) -> None:
+        """Initialize the agent with OpenAI model and tools."""
         try:
-            genai.configure(api_key=settings.gemini_api_key)
+            # Disable tracing to avoid SDK interference
+            set_tracing_disabled(True)
 
-            generation_config = {
-                "temperature": self.config.temperature,
-                "max_output_tokens": self.config.max_output_tokens,
-            }
+            # Verify API key is loaded
+            if not settings.openai_api_key:
+                raise ValueError("OPENAI_API_KEY not configured in environment")
 
-            self.client = genai.GenerativeModel(
-                model_name=self.config.model_name,
-                generation_config=generation_config,
-                tools=_create_mcp_tools(),
-                system_instruction=SYSTEM_INSTRUCTIONS
+            logger.info(f"OPENAI_API_KEY loaded: {settings.openai_api_key[:20]}...")
+
+            # Initialize AsyncOpenAI with OpenAI base URL
+            provider = AsyncOpenAI(
+                api_key=settings.openai_api_key,
+                base_url="https://api.openai.com/v1"
             )
 
-            logger.info(
-                f"TodoBot initialized: {self.config.model_name}"
+            # Configure model using OpenAIChatCompletionsModel
+            model = OpenAIChatCompletionsModel(
+                model=settings.openai_model,
+                openai_client=provider
             )
+
+            # Create agent with @function_tool decorated tools
+            self.agent = Agent(
+                name="TodoBot",
+                instructions=SYSTEM_INSTRUCTIONS,
+                model=model,
+                tools=[
+                    tool_add_task,
+                    tool_list_tasks,
+                    tool_complete_task,
+                    tool_delete_task,
+                    tool_update_task
+                ]
+            )
+
+            logger.info(f"TodoBot agent initialized with model: {settings.openai_model}")
 
         except Exception as e:
             logger.error(f"Failed to initialize TodoBot: {e}")
@@ -358,7 +363,7 @@ class TodoBot:
 
     async def run(self, request: AgentRequest) -> AgentResponse:
         """
-        Process user message and execute tool calls.
+        Process user message and execute tool calls through Runner.run().
 
         Args:
             request: Agent request with user message and context
@@ -366,57 +371,27 @@ class TodoBot:
         Returns:
             Agent response with message and tool calls
         """
-        if not self.client:
-            raise ValueError("TodoBot client not initialized")
+        if not self.agent:
+            raise ValueError("TodoBot agent not initialized")
 
         try:
-            # Prepare conversation history
-            history = self._prepare_history(
-                request.conversation_history
-            )
+            # Create context with user_id for dependency injection
+            context = TodoBotContext(user_id=request.user_id)
 
-            # Start chat session
-            chat = self.client.start_chat(history=history)
+            # Execute agent through Runner.run()
+            result = await Runner.run(self.agent, request.message, context=context)
 
-            # Send message
-            response = chat.send_message(request.message)
+            # Extract response from result.final_output
+            response_text = result.final_output if hasattr(result, 'final_output') else "No response generated"
 
-            # Process response
+            # Remove emojis to avoid Windows console encoding issues
+            response_text = remove_emojis(response_text)
+
+            # Extract tool calls if available
             tool_calls = []
-            response_text = ""
+            # TODO: Parse tool calls from result if needed for response metadata
 
-            # Check for function calls
-            if hasattr(response, "parts"):
-                for part in response.parts:
-                    if hasattr(part, "function_call"):
-                        # Execute tool call
-                        tool_result = await self._execute_tool(
-                            part.function_call,
-                            request.user_id
-                        )
-                        tool_calls.append(tool_result)
-
-                        # Send tool result back to chat
-                        response = chat.send_message(
-                            genai.protos.Content(
-                                parts=[
-                                    genai.protos.Part(
-                                        function_response=genai.protos.FunctionResponse(
-                                            name=tool_result.name,
-                                            response={
-                                                "result": tool_result.result
-                                            }
-                                        )
-                                    )
-                                ]
-                            )
-                        )
-
-            # Extract final text response
-            if hasattr(response, "text"):
-                response_text = response.text
-            else:
-                response_text = ERROR_MESSAGES["unclear_intent"]
+            logger.info(f"TodoBot executed successfully for user {request.user_id}")
 
             return AgentResponse(
                 message=response_text,
@@ -427,107 +402,7 @@ class TodoBot:
         except Exception as e:
             logger.error(f"Error in TodoBot.run: {e}")
             return AgentResponse(
-                message=ERROR_MESSAGES["api_error"],
+                message="Error processing request. Please try again.",
                 tool_calls=[],
                 error=str(e)
-            )
-
-    def _prepare_history(
-        self,
-        messages: Optional[List[ConversationMessage]]
-    ) -> List[Dict[str, Any]]:
-        """
-        Convert conversation history to Gemini format.
-
-        Args:
-            messages: List of conversation messages
-
-        Returns:
-            Gemini-formatted history (last N messages)
-        """
-        if not messages:
-            return []
-
-        # Take last N messages
-        max_msgs = self.config.max_conversation_messages
-        recent = messages[-max_msgs:] if len(messages) > max_msgs else messages
-
-        # Convert to Gemini format
-        history = []
-        for msg in recent:
-            role = "user" if msg.role == "user" else "model"
-            history.append({
-                "role": role,
-                "parts": [msg.content]
-            })
-
-        return history
-
-    async def _execute_tool(
-        self,
-        function_call,
-        user_id: str
-    ) -> ToolCall:
-        """
-        Execute MCP tool and return result.
-
-        Args:
-            function_call: Gemini function call object
-            user_id: Authenticated user ID
-
-        Returns:
-            Tool call result
-        """
-        tool_name = function_call.name
-        arguments = dict(function_call.args)
-
-        # Ensure user_id is set
-        arguments["user_id"] = user_id
-
-        logger.info(f"Executing tool: {tool_name} with {arguments}")
-
-        try:
-            # Route to appropriate MCP tool
-            if tool_name == "add_task":
-                result = await add_task(**arguments)
-            elif tool_name == "list_tasks":
-                result = await list_tasks(**arguments)
-            elif tool_name == "complete_task":
-                result = await complete_task(**arguments)
-            elif tool_name == "delete_task":
-                result = await delete_task(**arguments)
-            elif tool_name == "update_task":
-                result = await update_task(**arguments)
-            else:
-                raise ValueError(f"Unknown tool: {tool_name}")
-
-            return ToolCall(
-                name=tool_name,
-                arguments=arguments,
-                result=result,
-                success=True
-            )
-
-        except ValueError as e:
-            # Tool validation or permission errors
-            error_msg = str(e)
-            logger.warning(f"Tool {tool_name} error: {error_msg}")
-
-            return ToolCall(
-                name=tool_name,
-                arguments=arguments,
-                result=error_msg,
-                success=False
-            )
-
-        except Exception as e:
-            # Unexpected errors
-            error_msg = ERROR_MESSAGES["database_error"]
-            logger.error(f"Unexpected error in {tool_name}: {e}")
-
-            return ToolCall(
-                name=tool_name,
-                arguments=arguments,
-                result=error_msg,
-                success=False
             )

@@ -16,31 +16,15 @@ interface UseThemeReturn {
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
   isDark: boolean;
+  mounted: boolean;
 }
 
-const THEME_STORAGE_KEY = 'todo-app-theme';
-
 /**
- * Get the initial theme from localStorage or system preference
+ * Get the initial theme - always returns dark mode
  */
 function getInitialTheme(): Theme {
-  // Check if window is available (client-side)
-  if (typeof window === 'undefined') {
-    return 'light';
-  }
-
-  // Check localStorage first
-  const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-  if (storedTheme === 'light' || storedTheme === 'dark') {
-    return storedTheme;
-  }
-
-  // Fall back to system preference
-  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
-  }
-
-  return 'light';
+  // Always return dark mode as default
+  return 'dark';
 }
 
 /**
@@ -78,42 +62,20 @@ function applyTheme(theme: Theme): void {
  */
 export function useTheme(): UseThemeReturn {
   const [theme, setThemeState] = useState<Theme>(() => getInitialTheme());
+  const [mounted, setMounted] = useState(false);
 
+  // Mark as mounted on first render
   useEffect(() => {
-    // Apply theme on mount
-    applyTheme(theme);
+    setMounted(true);
   }, []);
 
+  // Apply dark theme on mount
   useEffect(() => {
-    // Apply theme whenever it changes
-    applyTheme(theme);
-
-    // Persist to localStorage
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
-  }, [theme]);
-
-  useEffect(() => {
-    // Listen for system theme changes
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-    const handleChange = (e: MediaQueryListEvent) => {
-      // Only update if user hasn't manually set a theme
-      const hasStoredTheme = localStorage.getItem(THEME_STORAGE_KEY);
-      if (!hasStoredTheme) {
-        setThemeState(e.matches ? 'dark' : 'light');
-      }
-    };
-
-    // Modern browsers
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
+    if (mounted) {
+      // Always apply dark theme
+      applyTheme('dark');
     }
-
-    // Legacy browsers
-    mediaQuery.addListener(handleChange);
-    return () => mediaQuery.removeListener(handleChange);
-  }, []);
+  }, [mounted]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
@@ -130,5 +92,6 @@ export function useTheme(): UseThemeReturn {
     setTheme,
     toggleTheme,
     isDark,
+    mounted,
   };
 }

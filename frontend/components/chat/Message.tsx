@@ -35,7 +35,7 @@ export const Message = memo(function Message({ message }: MessageProps) {
       {/* Assistant avatar */}
       {isAssistant && (
         <div
-          className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0"
+          className="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg animate-pulse-subtle"
           aria-hidden="true"
         >
           <Bot className="w-5 h-5 text-white" />
@@ -44,16 +44,18 @@ export const Message = memo(function Message({ message }: MessageProps) {
 
       {/* Message bubble */}
       <div
-        className={`max-w-[70%] rounded-2xl px-4 py-3 ${
+        className={`max-w-[70%] rounded-2xl px-4 py-3 transition-all hover:scale-[1.01] ${
           isUser
-            ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white"
-            : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700"
+            ? "btn-primary shadow-lg"
+            : "glass-card bg-slate-800/90 border-slate-700/50"
         }`}
       >
-        <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+        <p className={`text-sm whitespace-pre-wrap break-words ${
+          isUser ? "text-white" : "text-white/90"
+        }`}>{message.content}</p>
         <p
           className={`text-xs mt-1 ${
-            isUser ? "text-blue-100" : "text-gray-500 dark:text-gray-400"
+            isUser ? "text-white/80" : "text-white/60"
           }`}
         >
           {timestamp}
@@ -65,10 +67,10 @@ export const Message = memo(function Message({ message }: MessageProps) {
       {/* User avatar */}
       {isUser && (
         <div
-          className="w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0"
+          className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 backdrop-blur-sm border border-white/30"
           aria-hidden="true"
         >
-          <UserIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          <UserIcon className="w-5 h-5 text-white" />
         </div>
       )}
     </div>

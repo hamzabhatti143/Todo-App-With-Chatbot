@@ -46,20 +46,20 @@ export function ChatInterface({ userName }: ChatInterfaceProps) {
     : state.messages;
 
   return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto">
+    <div className="flex flex-col h-full max-w-4xl mx-auto bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Header */}
-      <div className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 p-4">
+      <div className="glass-navbar backdrop-blur-xl p-4 animate-slide-down bg-slate-900/95 border-b border-slate-700/50">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center shadow-lg animate-pulse-subtle">
             <Bot className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">TodoBot</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">AI Task Assistant</p>
+            <h2 className="text-lg font-bold text-white">TodoBot</h2>
+            <p className="text-sm text-white/80">AI Task Assistant</p>
           </div>
           <div className="ml-auto text-right">
-            <p className="text-sm font-medium text-gray-900 dark:text-white">{userName}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-sm font-medium text-white/95">{userName}</p>
+            <p className="text-xs text-white/60">
               {state.conversationId ? `Conversation #${state.conversationId.slice(0, 8)}` : "New conversation"}
             </p>
           </div>
@@ -68,7 +68,7 @@ export function ChatInterface({ userName }: ChatInterfaceProps) {
 
       {/* Error Message */}
       {state.error && (
-        <div className="p-4">
+        <div className="p-4 animate-slide-down">
           <ErrorMessage
             message={state.error}
             onDismiss={() => {
@@ -81,17 +81,17 @@ export function ChatInterface({ userName }: ChatInterfaceProps) {
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-hidden flex flex-col bg-gray-50 dark:bg-slate-950">
+      <div className="flex-1 overflow-hidden flex flex-col bg-slate-900/50">
         <MessageList messages={messages} />
 
         {/* Loading indicator */}
         {state.loading && (
           <div className="px-4 pb-4">
             <div className="flex gap-3 justify-start animate-slide-up">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center shadow-lg">
                 <Bot className="w-5 h-5 text-white" />
               </div>
-              <div className="bg-white dark:bg-slate-800 px-4 py-3 rounded-2xl border border-gray-200 dark:border-slate-700">
+              <div className="glass-card px-4 py-3 rounded-2xl bg-slate-800/90 border-slate-700/50">
                 <LoadingSpinner size="sm" />
               </div>
             </div>

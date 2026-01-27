@@ -65,6 +65,15 @@ async def root():
         "version": "1.0.0"
     }
 
+@app.get("/test-logging")
+async def test_logging():
+    """Test endpoint to verify logging is working"""
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info("TEST LOGGING - This message should appear in logs")
+    logger.error("TEST ERROR - This error should appear in logs")
+    return {"status": "logged", "message": "Check server logs for test messages"}
+
 @app.get("/health")
 async def health_check():
     """

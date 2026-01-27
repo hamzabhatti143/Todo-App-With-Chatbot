@@ -54,19 +54,43 @@ async def list_conversations(
             offset=offset,
         )
 
-        # For each conversation, count messages
+        # For each conversation, get messages for title and last_message
         result = []
         for conversation in conversations:
-            # Count messages for this conversation
-            message_count_stmt = select(func.count(Message.id)).where(
-                Message.conversation_id == conversation.id
+            # Get messages for this conversation
+            messages_stmt = (
+                select(Message)
+                .where(Message.conversation_id == conversation.id)
+                .order_by(Message.created_at.asc())
             )
-            message_count = session.exec(message_count_stmt).one()
+            messages = session.exec(messages_stmt).all()
+
+            # Count messages
+            message_count = len(messages)
+
+            # Generate title from first user message (max 50 chars)
+            title = "New Conversation"
+            if messages:
+                first_user_msg = next((m for m in messages if m.role.value == "user"), None)
+                if first_user_msg:
+                    title = first_user_msg.content[:50]
+                    if len(first_user_msg.content) > 50:
+                        title += "..."
+
+            # Get last message preview (max 100 chars)
+            last_message = ""
+            if messages:
+                last_msg = messages[-1]
+                last_message = last_msg.content[:100]
+                if len(last_msg.content) > 100:
+                    last_message += "..."
 
             result.append(
                 ConversationResponse(
                     id=conversation.id,
                     user_id=conversation.user_id,
+                    title=title,
+                    last_message=last_message,
                     created_at=conversation.created_at,
                     updated_at=conversation.updated_at,
                     message_count=message_count,

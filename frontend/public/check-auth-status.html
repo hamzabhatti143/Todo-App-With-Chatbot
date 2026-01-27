@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Status Checker</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .section {
+            background: #2d2d2d;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007acc;
+        }
+        .error { border-left-color: #f44336; }
+        .success { border-left-color: #4caf50; }
+        .warning { border-left-color: #ff9800; }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        button:hover { background: #005a9e; }
+        .danger { background: #f44336; }
+        .danger:hover { background: #d32f2f; }
+        pre {
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Authentication Status Checker</h1>
+
+    <div class="section">
+        <h2>Current localStorage Status</h2>
+        <div id="storage-status"></div>
+    </div>
+
+    <div class="section">
+        <h2>Actions</h2>
+        <button onclick="checkStatus()">🔄 Refresh Status</button>
+        <button onclick="clearAuth()" class="danger">🗑️ Clear Auth (Fix Issue)</button>
+        <button onclick="testBackend()">🧪 Test Backend Connection</button>
+    </div>
+
+    <div class="section" id="test-results" style="display:none;">
+        <h2>Test Results</h2>
+        <div id="test-output"></div>
+    </div>
+
+    <script>
+        function checkStatus() {
+            const authToken = localStorage.getItem('auth_token');
+            const userId = localStorage.getItem('user_id');
+
+            let html = '<h3>Storage Contents:</h3>';
+
+            if (!authToken && !userId) {
+                html += '<div class="error"><strong>❌ NO AUTH DATA FOUND</strong><br>';
+                html += 'You need to login again.</div>';
+            } else if (!authToken) {
+                html += '<div class="error"><strong>❌ NO TOKEN FOUND</strong><br>';
+                html += 'auth_token is missing. You need to login again.</div>';
+            } else if (!userId) {
+                html += '<div class="warning"><strong>⚠️ NO USER ID FOUND</strong><br>';
+                html += 'user_id is missing but token exists. You need to login again.</div>';
+            } else {
+                html += '<div class="success"><strong>✅ AUTH DATA FOUND</strong></div>';
+                html += '<pre>auth_token: ' + authToken.substring(0, 50) + '...\n';
+                html += 'user_id: ' + userId + '</pre>';
+
+                // Decode JWT to check
+                try {
+                    const payload = JSON.parse(atob(authToken.split('.')[1]));
+                    html += '<h3>Token Payload:</h3><pre>' + JSON.stringify(payload, null, 2) + '</pre>';
+
+                    // Check if token matches user_id
+                    if (payload.sub !== userId) {
+                        html += '<div class="error"><strong>❌ TOKEN MISMATCH!</strong><br>';
+                        html += 'Token user_id (' + payload.sub + ') does not match stored user_id (' + userId + ')</div>';
+                    } else {
+                        html += '<div class="success"><strong>✅ TOKEN MATCHES USER ID</strong></div>';
+                    }
+
+                    // Check expiration
+                    const now = Math.floor(Date.now() / 1000);
+                    if (payload.exp < now) {
+                        html += '<div class="error"><strong>❌ TOKEN EXPIRED</strong><br>';
+                        html += 'Token expired at: ' + new Date(payload.exp * 1000).toLocaleString() + '</div>';
+                    } else {
+                        const remaining = Math.floor((payload.exp - now) / 60);
+                        html += '<div class="success"><strong>✅ TOKEN VALID</strong><br>';
+                        html += 'Expires in: ' + remaining + ' minutes</div>';
+                    }
+                } catch (e) {
+                    html += '<div class="error"><strong>❌ INVALID TOKEN FORMAT</strong><br>';
+                    html += 'Cannot decode token: ' + e.message + '</div>';
+                }
+            }
+
+            // Show all localStorage keys
+            html += '<h3>All localStorage Keys:</h3><pre>';
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                const displayValue = value.length > 100 ? value.substring(0, 100) + '...' : value;
+                html += key + ': ' + displayValue + '\n';
+            }
+            html += '</pre>';
+
+            document.getElementById('storage-status').innerHTML = html;
+        }
+
+        function clearAuth() {
+            if (confirm('This will clear auth_token and user_id from localStorage. Continue?')) {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('user_id');
+                alert('✅ Auth data cleared!\n\nNow you need to:\n1. Go to http://localhost:3000/signin\n2. Login with test credentials\n3. Check this page again');
+                checkStatus();
+            }
+        }
+
+        async function testBackend() {
+            const resultsDiv = document.getElementById('test-results');
+            const outputDiv = document.getElementById('test-output');
+            resultsDiv.style.display = 'block';
+
+            let html = '<h3>Testing Backend...</h3>';
+            outputDiv.innerHTML = html;
+
+            // Test 1: Health check
+            try {
+                const healthResponse = await fetch('http://localhost:8002/health');
+                const healthData = await healthResponse.json();
+                html += '<div class="success"><strong>✅ Backend Health:</strong> ' + healthResponse.status + '<pre>' + JSON.stringify(healthData, null, 2) + '</pre></div>';
+            } catch (e) {
+                html += '<div class="error"><strong>❌ Backend Health:</strong> ' + e.message + '</div>';
+            }
+            outputDiv.innerHTML = html;
+
+            // Test 2: Get conversations (if we have a token)
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                try {
+                    const convResponse = await fetch('http://localhost:8002/api/conversations', {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+
+                    if (convResponse.status === 200) {
+                        const convData = await convResponse.json();
+                        html += '<div class="success"><strong>✅ Get Conversations:</strong> ' + convResponse.status + '<pre>' + JSON.stringify(convData, null, 2) + '</pre></div>';
+                    } else {
+                        const errorData = await convResponse.json();
+                        html += '<div class="error"><strong>❌ Get Conversations:</strong> ' + convResponse.status + '<pre>' + JSON.stringify(errorData, null, 2) + '</pre></div>';
+
+                        if (convResponse.status === 401) {
+                            html += '<div class="warning"><strong>⚠️ DIAGNOSIS:</strong><br>';
+                            html += 'Your token is invalid or user doesn\'t exist.<br>';
+                            html += '<strong>FIX:</strong> Click "Clear Auth" button above, then login again.</div>';
+                        }
+                    }
+                } catch (e) {
+                    html += '<div class="error"><strong>❌ Get Conversations:</strong> ' + e.message + '</div>';
+                }
+            } else {
+                html += '<div class="warning"><strong>⚠️ Skipping API test:</strong> No auth token found</div>';
+            }
+
+            outputDiv.innerHTML = html;
+        }
+
+        // Auto-check on load
+        window.onload = checkStatus;
+    </script>
+</body>
+</html>

@@ -132,6 +132,14 @@ class ConversationResponse(BaseModel):
 
     id: UUID
     user_id: UUID
+    title: str = Field(
+        ...,
+        description="Title of the conversation (from first user message)",
+    )
+    last_message: str = Field(
+        ...,
+        description="Preview of the last message",
+    )
     created_at: datetime
     updated_at: datetime
     message_count: int = Field(

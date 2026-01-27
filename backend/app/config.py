@@ -22,13 +22,12 @@ class Settings(BaseSettings):
     # Application
     debug: bool = False
 
-    # Gemini AI Configuration
-    gemini_api_key: str
-    gemini_model: str = "gemini-2.0-flash"
-    gemini_temperature: float = 0.7
-    gemini_max_tokens: int = 1024
-    gemini_rate_limit: int = 100
-    gemini_timeout: int = 30
+    # OpenAI API Configuration
+    openai_api_key: str
+    openai_model: str = "gpt-4o-mini"
+    openai_temperature: float = 0.7
+    openai_max_tokens: int = 1024
+    openai_timeout: int = 30
 
     # Rate Limiting
     rate_limit_chat: str = "10/minute"

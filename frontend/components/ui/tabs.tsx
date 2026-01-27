@@ -24,7 +24,7 @@ export function TabsList({ className, ...props }: TabsListProps) {
     <RadixTabs.List
       className={cn(
         'inline-flex items-center justify-center rounded-lg',
-        'bg-gray-100 dark:bg-gray-800',
+        'bg-slate-800/60',
         'p-1',
         className
       )}
@@ -47,9 +47,9 @@ export function TabsTrigger({ className, children, value, ...props }: TabsTrigge
         'transition-all duration-200',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
         'disabled:pointer-events-none disabled:opacity-50',
-        'text-gray-600 dark:text-gray-400',
-        'hover:text-gray-900 dark:hover:text-gray-100',
-        'data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100',
+        'text-gray-400',
+        'hover:text-gray-100',
+        'data-[state=active]:text-gray-100',
         className
       )}
       {...props}
@@ -58,7 +58,7 @@ export function TabsTrigger({ className, children, value, ...props }: TabsTrigge
       <AnimatePresence>
         <RadixTabs.Trigger value={value} asChild>
           <motion.div
-            className="absolute inset-0 z-[-1] rounded-md bg-white dark:bg-gray-700 shadow-sm"
+            className="absolute inset-0 z-[-1] rounded-md bg-slate-700 shadow-sm"
             layoutId="activeTab"
             initial={false}
             transition={{

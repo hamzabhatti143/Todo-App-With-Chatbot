@@ -94,11 +94,11 @@ export function TaskFilters({
                 <DropdownItem
                   key={option.value}
                   onClick={() => onSortChange(option.value)}
-                  className={sort === option.value ? 'bg-gray-100 dark:bg-gray-700' : ''}
+                  className={sort === option.value ? 'bg-slate-700' : ''}
                 >
                   {option.label}
                   {sort === option.value && (
-                    <span className="ml-auto text-blue-600 dark:text-blue-400">✓</span>
+                    <span className="ml-auto text-blue-400">✓</span>
                   )}
                 </DropdownItem>
               ))}
@@ -117,7 +117,7 @@ export function TaskFilters({
                 variant="ghost"
                 size="sm"
                 onClick={onClearFilters}
-                className="text-gray-600 dark:text-gray-400"
+                className="text-gray-400"
               >
                 <motion.div
                   whileHover={{ rotate: 180 }}
@@ -149,7 +149,7 @@ function TaskCountBadge({ count, active }: TaskCountBadgeProps) {
       className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${
         active
           ? 'bg-blue-500 text-white'
-          : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+          : 'bg-slate-700 text-gray-400'
       }`}
       layout
       transition={{ duration: 0.2 }}

@@ -9,9 +9,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Moon, Sun, LogOut, User, Settings } from 'lucide-react';
+import { LogOut, User, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useTheme } from '@/lib/hooks/use-theme';
 import { Avatar } from '@/components/ui/avatar';
 import {
   Dropdown,
@@ -21,7 +20,6 @@ import {
   DropdownSeparator,
   DropdownLabel,
 } from '@/components/ui/dropdown';
-import { Button } from '@/components/ui/button';
 import { Container } from './container';
 
 interface NavbarProps {
@@ -36,7 +34,6 @@ interface NavbarProps {
 
 export function Navbar({ user, onLogout, className }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
-  const { toggleTheme, isDark } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,8 +49,8 @@ export function Navbar({ user, onLogout, className }: NavbarProps) {
       className={cn(
         'fixed top-0 left-0 right-0 z-40 transition-all duration-200',
         scrolled
-          ? 'bg-slate-900/80 backdrop-blur-xl shadow-lg border-b border-slate-700/50'
-          : 'bg-slate-900/50 backdrop-blur-sm border-b border-slate-700/30',
+          ? 'bg-slate-900/95 backdrop-blur-xl shadow-lg border-b border-slate-700/50'
+          : 'bg-slate-900/80 backdrop-blur-sm border-b border-slate-700/30',
         className
       )}
       initial={{ y: -100 }}
@@ -74,29 +71,8 @@ export function Navbar({ user, onLogout, className }: NavbarProps) {
             </motion.a>
           </div>
 
-          {/* Right Side - Theme Toggle & User Menu */}
+          {/* Right Side - User Menu */}
           <div className="flex items-center gap-2">
-            {/* Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleTheme}
-              aria-label="Toggle theme"
-              className="rounded-full w-11 h-11 p-0"
-            >
-              <motion.div
-                initial={false}
-                animate={{ rotate: isDark ? 180 : 0 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-              >
-                {isDark ? (
-                  <Moon className="h-5 w-5" />
-                ) : (
-                  <Sun className="h-5 w-5" />
-                )}
-              </motion.div>
-            </Button>
-
             {/* User Menu */}
             {user && (
               <Dropdown>
@@ -124,7 +100,7 @@ export function Navbar({ user, onLogout, className }: NavbarProps) {
 
                   <DropdownItem>
                     <div className="flex flex-col">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-xs text-gray-400">
                         {user.email}
                       </span>
                     </div>
@@ -141,7 +117,7 @@ export function Navbar({ user, onLogout, className }: NavbarProps) {
 
                   <DropdownItem
                     onClick={onLogout}
-                    className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
+                    className="text-red-400 focus:text-red-400"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>

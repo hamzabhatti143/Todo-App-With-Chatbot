@@ -17,7 +17,7 @@ export function LoadingSpinner({ size = "md" }: LoadingSpinnerProps) {
   return (
     <div className="flex items-center justify-center">
       <div
-        className={`${sizes[size]} border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin`}
+        className={`${sizes[size]} border-4 border-white/30 border-t-white rounded-full animate-spin`}
         aria-label="Loading"
       />
     </div>
