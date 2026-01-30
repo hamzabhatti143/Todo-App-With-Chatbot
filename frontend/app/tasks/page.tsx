@@ -21,7 +21,7 @@ import type { Task, TaskCreate } from '@/types/task';
 
 export default function TasksPage() {
   const router = useRouter();
-  const { userId } = useAuth();
+  const { username } = useAuth();
   const {
     tasks,
     loading,
@@ -30,7 +30,7 @@ export default function TasksPage() {
     updateTask,
     deleteTask,
     toggleComplete,
-  } = useTasks(userId);
+  } = useTasks(username);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);

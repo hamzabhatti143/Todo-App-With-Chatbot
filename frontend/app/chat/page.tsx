@@ -17,9 +17,9 @@ import Link from "next/link";
 
 export default function ChatPage() {
   const router = useRouter();
-  const { isAuthenticated, loading: authLoading, userId } = useAuth();
+  const { isAuthenticated, loading: authLoading, username } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [userIdState, setUserIdState] = useState<string | null>(null);
+  const [usernameState, setUsernameState] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>("User");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -31,23 +31,18 @@ export default function ChatPage() {
       return;
     }
 
-    if (isAuthenticated && userId) {
-      setUserIdState(userId);
-      // Set user name from userId (extract from email format if present)
-      if (userId.includes("@")) {
-        setUserName(userId.split("@")[0]);
-      } else {
-        setUserName(userId);
-      }
+    if (isAuthenticated && username) {
+      setUsernameState(username);
+      setUserName(username);
       setLoading(false);
     }
-  }, [isAuthenticated, authLoading, userId, router]);
+  }, [isAuthenticated, authLoading, username, router]);
 
   if (loading || authLoading) {
     return <PageLoading text="Loading Chat..." />;
   }
 
-  if (!userIdState) {
+  if (!usernameState) {
     return null; // Will redirect
   }
 
@@ -79,7 +74,7 @@ export default function ChatPage() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
-        <ChatProvider userId={userIdState}>
+        <ChatProvider userId={usernameState}>
           {/* Sidebar - Hidden on mobile, visible on desktop */}
           <aside
             className={`${
@@ -91,7 +86,7 @@ export default function ChatPage() {
 
           {/* Chat Interface */}
           <div className="flex-1 overflow-hidden">
-            <ChatInterface userId={userIdState} userName={userName} />
+            <ChatInterface userId={usernameState} userName={userName} />
           </div>
         </ChatProvider>
       </div>

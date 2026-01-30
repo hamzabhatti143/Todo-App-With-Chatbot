@@ -17,6 +17,7 @@ class User(SQLModel, table=True):
     __tablename__ = "users"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
+    username: str = Field(unique=True, index=True, max_length=50)
     email: str = Field(unique=True, index=True, max_length=255)
     hashed_password: str = Field(max_length=255)
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -29,6 +30,7 @@ class User(SQLModel, table=True):
     class Config:
         json_schema_extra = {
             "example": {
+                "username": "johndoe",
                 "email": "user@example.com",
                 "hashed_password": "$2b$12$...",
             }

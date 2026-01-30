@@ -12,18 +12,18 @@ import type { UserLogin, UserCreate } from '@/types/user'
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
+  const [username, setUsername] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
     // Check if user is authenticated on mount
     const token = localStorage.getItem('auth_token')
-    const storedUserId = localStorage.getItem('user_id')
+    const storedUsername = localStorage.getItem('username')
 
-    if (token && storedUserId) {
+    if (token && storedUsername) {
       setIsAuthenticated(true)
-      setUserId(storedUserId)
+      setUsername(storedUsername)
     }
     setLoading(false)
   }, [])
@@ -33,13 +33,13 @@ export function useAuth() {
       const response = await authApi.login(data)
       localStorage.setItem('auth_token', response.access_token)
 
-      // Decode JWT to get user ID (simple base64 decode)
+      // Decode JWT to get username (simple base64 decode)
       const payload = JSON.parse(atob(response.access_token.split('.')[1]))
-      const userId = payload.sub
-      localStorage.setItem('user_id', userId)
+      const username = payload.sub
+      localStorage.setItem('username', username)
 
       setIsAuthenticated(true)
-      setUserId(userId)
+      setUsername(username)
 
       // Emit login event to trigger data reload across app
       appEvents.emit(APP_EVENTS.USER_LOGGED_IN)
@@ -55,7 +55,7 @@ export function useAuth() {
       await authApi.register(data)
 
       // Auto-login after registration
-      const loginResult = await login({ email: data.email, password: data.password })
+      const loginResult = await login({ username: data.username, password: data.password })
       return loginResult
     } catch (error) {
       return { success: false, error: handleApiError(error) }
@@ -64,9 +64,9 @@ export function useAuth() {
 
   const logout = () => {
     localStorage.removeItem('auth_token')
-    localStorage.removeItem('user_id')
+    localStorage.removeItem('username')
     setIsAuthenticated(false)
-    setUserId(null)
+    setUsername(null)
 
     // Emit logout event to clear data across app
     appEvents.emit(APP_EVENTS.USER_LOGGED_OUT)
@@ -76,7 +76,7 @@ export function useAuth() {
 
   return {
     isAuthenticated,
-    userId,
+    username,
     loading,
     login,
     register,

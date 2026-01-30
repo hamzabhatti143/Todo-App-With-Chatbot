@@ -10,6 +10,7 @@
  */
 export interface User {
   id: string;
+  username: string;
   email: string;
   created_at: string;
 }
@@ -18,6 +19,7 @@ export interface User {
  * Input for creating a new user
  */
 export interface UserCreate {
+  username: string;
   email: string;
   password: string;
 }
@@ -26,7 +28,7 @@ export interface UserCreate {
  * Input for user login
  */
 export interface UserLogin {
-  email: string;
+  username: string;
   password: string;
 }
 

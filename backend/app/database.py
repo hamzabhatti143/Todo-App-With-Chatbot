@@ -12,13 +12,14 @@ load_dotenv()
 # Get database URL from environment
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/todo_db")
 
-# Create engine with connection pooling
+# Create engine with connection pooling (optimized for performance)
 engine = create_engine(
     DATABASE_URL,
-    echo=True if os.getenv("DEBUG", "True") == "True" else False,
+    echo=False,  # Disable SQL query logging for better performance
     pool_pre_ping=True,  # Verify connections before using
-    pool_size=5,
-    max_overflow=10,
+    pool_size=20,  # Increased pool size for better concurrency
+    max_overflow=20,  # Increased overflow for peak loads
+    pool_recycle=3600,  # Recycle connections after 1 hour
 )
 
 

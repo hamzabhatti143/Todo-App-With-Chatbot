@@ -16,12 +16,12 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, userId, logout } = useAuth();
+  const { isAuthenticated, username, logout } = useAuth();
 
   // Get user info (in a real app, this would come from useAuth)
-  const user = isAuthenticated && userId
+  const user = isAuthenticated && username
     ? {
-        name: 'User',
+        name: username,
         email: localStorage.getItem('user_email') || 'user@example.com',
       }
     : undefined;

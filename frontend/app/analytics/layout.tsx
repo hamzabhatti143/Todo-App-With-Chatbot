@@ -15,12 +15,12 @@ export default function AnalyticsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, userId, logout } = useAuth();
+  const { isAuthenticated, username, logout } = useAuth();
 
   // Get user info
-  const user = isAuthenticated && userId
+  const user = isAuthenticated && username
     ? {
-        name: 'User',
+        name: username,
         email: localStorage.getItem('user_email') || 'user@example.com',
       }
     : undefined;

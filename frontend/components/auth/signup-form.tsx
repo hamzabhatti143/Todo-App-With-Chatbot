@@ -9,7 +9,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 import { signupSchema, type SignupInput } from '@/validation/user';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ interface SignupFormProps {
 
 export function SignupForm({ onSubmit, onSigninClick, className }: SignupFormProps) {
   const [formData, setFormData] = useState({
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -63,6 +64,7 @@ export function SignupForm({ onSubmit, onSigninClick, className }: SignupFormPro
     try {
       setIsSubmitting(true);
       await onSubmit({
+        username: result.data.username,
         email: result.data.email,
         password: result.data.password,
       });
@@ -81,6 +83,21 @@ export function SignupForm({ onSubmit, onSigninClick, className }: SignupFormPro
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
+      {/* Username Input */}
+      <div className="relative">
+        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none z-10" />
+        <Input
+          type="text"
+          value={formData.username}
+          onChange={handleChange('username')}
+          error={errors.username}
+          className="pl-10"
+          placeholder="Username"
+          required
+          disabled={isSubmitting}
+        />
+      </div>
+
       {/* Email Input */}
       <div className="relative">
         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none z-10" />

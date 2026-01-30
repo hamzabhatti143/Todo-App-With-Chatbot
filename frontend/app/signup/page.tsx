@@ -22,7 +22,7 @@ export default function SignUpPage() {
   const { register } = useAuth();
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleSubmit = async (data: { email: string; password: string }) => {
+  const handleSubmit = async (data: { username: string; email: string; password: string }) => {
     const result = await register(data);
 
     if (!result.success) {

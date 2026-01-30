@@ -120,5 +120,6 @@ if __name__ == "__main__":
         "app.main:app",
         host="0.0.0.0",
         port=8000,
-        reload=True
+        reload=True,
+        timeout_keep_alive=60  # Keep connections alive for 60 seconds (handles long AI requests)
     )

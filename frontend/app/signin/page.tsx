@@ -24,7 +24,7 @@ export default function SignInPage() {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const handleSubmit = async (data: SigninInput) => {
-    const result = await login({ email: data.email, password: data.password });
+    const result = await login(data);
 
     if (!result.success) {
       throw new Error(result.error || 'Login failed');

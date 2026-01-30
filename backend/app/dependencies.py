@@ -49,34 +49,27 @@ async def get_current_user(
         logger.info(f"Authentication: Token received (length: {len(token)})")
 
         payload = decode_token(token)
-        user_id: str = payload.get("sub")
+        username: str = payload.get("sub")
 
-        if user_id is None:
+        if username is None:
             logger.error("Authentication: No 'sub' claim found in token")
             raise credentials_exception
 
-        logger.info(f"Authentication: Extracted user_id from token: {user_id}")
+        logger.info(f"Authentication: Extracted username from token: {username}")
 
     except JWTError as e:
         logger.error(f"Authentication: JWT decode error: {e}")
         raise credentials_exception
 
-    # Get user from database
-    try:
-        user_uuid = UUID(user_id)
-        logger.info(f"Authentication: Parsed UUID: {user_uuid}")
-    except ValueError as e:
-        logger.error(f"Authentication: Invalid UUID format: {e}")
-        raise credentials_exception
-
-    statement = select(User).where(User.id == user_uuid)
+    # Get user from database by username
+    statement = select(User).where(User.username == username)
     user = session.exec(statement).first()
 
     if user is None:
-        logger.error(f"Authentication: User {user_uuid} not found in database")
+        logger.error(f"Authentication: User '{username}' not found in database")
         raise credentials_exception
 
-    logger.info(f"Authentication: Successfully authenticated user {user.id} ({user.email})")
+    logger.info(f"Authentication: Successfully authenticated user {user.username} ({user.email})")
     return user
 
 
@@ -93,3 +86,18 @@ async def get_current_user_id(
         UUID: The user's ID
     """
     return current_user.id
+
+
+async def get_current_username(
+    current_user: User = Depends(get_current_user)
+) -> str:
+    """
+    Get the current user's username.
+
+    Args:
+        current_user: The authenticated user
+
+    Returns:
+        str: The user's username
+    """
+    return current_user.username

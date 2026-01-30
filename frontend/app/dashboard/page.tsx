@@ -24,7 +24,7 @@ import type { Task, TaskCreate, FilterType, SortType } from '@/types/task';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { isAuthenticated, userId, loading: authLoading } = useAuth();
+  const { isAuthenticated, username, loading: authLoading } = useAuth();
   const {
     tasks,
     loading: tasksLoading,
@@ -34,7 +34,7 @@ export default function DashboardPage() {
     updateTask,
     deleteTask,
     toggleComplete,
-  } = useTasks(userId);
+  } = useTasks(username);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);

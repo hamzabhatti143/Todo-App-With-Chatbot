@@ -25,13 +25,13 @@ class Settings(BaseSettings):
     # OpenAI API Configuration
     openai_api_key: str
     openai_model: str = "gpt-4o-mini"
-    openai_temperature: float = 0.7
-    openai_max_tokens: int = 1024
+    openai_temperature: float = 0.3  # Reduced from 0.7 for faster, more focused responses
+    openai_max_tokens: int = 512  # Reduced from 1024 for faster generation
     openai_timeout: int = 30
 
     # Rate Limiting
-    rate_limit_chat: str = "10/minute"
-    rate_limit_agent: str = "5/minute"
+    rate_limit_chat: str = "20/minute"  # Increased from 10 for smoother experience
+    rate_limit_agent: str = "15/minute"  # Increased from 5 for faster interactions
 
     # Optional: Redis for rate limiting
     redis_url: Optional[str] = None

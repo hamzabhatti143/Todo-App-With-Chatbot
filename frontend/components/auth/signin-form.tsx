@@ -9,7 +9,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { signinSchema, type SigninInput } from '@/validation/user';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,7 @@ interface SigninFormProps {
 
 export function SigninForm({ onSubmit, onSignupClick, className }: SigninFormProps) {
   const [formData, setFormData] = useState<SigninInput>({
-    email: '',
+    username: '',
     password: '',
     rememberMe: false,
   });
@@ -69,7 +69,7 @@ export function SigninForm({ onSubmit, onSignupClick, className }: SigninFormPro
       setIsSubmitting(true);
       await onSubmit(result.data);
     } catch (error) {
-      setErrors({ email: 'Invalid email or password. Please try again.' });
+      setErrors({ username: 'Invalid username or password. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -83,16 +83,16 @@ export function SigninForm({ onSubmit, onSignupClick, className }: SigninFormPro
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-      {/* Email Input */}
+      {/* Username Input */}
       <div className="relative">
-        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none z-10" />
+        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none z-10" />
         <Input
-          type="email"
-          value={formData.email}
-          onChange={handleChange('email')}
-          error={errors.email}
+          type="text"
+          value={formData.username}
+          onChange={handleChange('username')}
+          error={errors.username}
           className="pl-10"
-          placeholder="Email address"
+          placeholder="Username"
           required
           disabled={isSubmitting}
         />

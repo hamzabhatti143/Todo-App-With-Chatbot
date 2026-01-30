@@ -131,7 +131,7 @@ async def list_tasks(
                 return "No tasks found"
 
             task_list = "\n".join([
-                f"{'✓' if task.completed else '◯'} {task.title}"
+                f"{'✓' if task.completed else '◯'} {task.title} (ID: {task.id})"
                 for task in tasks
             ])
 

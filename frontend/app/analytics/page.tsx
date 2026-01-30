@@ -19,8 +19,8 @@ import { FadeIn } from '@/components/animations/fade-in';
 
 export default function AnalyticsPage() {
   const router = useRouter();
-  const { userId } = useAuth();
-  const { tasks, loading } = useTasks(userId);
+  const { username } = useAuth();
+  const { tasks, loading } = useTasks(username);
 
   // Calculate analytics data
   const analytics = useMemo(() => {

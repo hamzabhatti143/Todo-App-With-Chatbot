@@ -32,6 +32,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 60000, // 60 second timeout for AI chat requests (can take 20-30s)
 })
 
 // Add auth request interceptor
@@ -87,32 +88,32 @@ export const authApi = {
 
 // Tasks API
 export const tasksApi = {
-  getAll: async (userId: string): Promise<Task[]> => {
-    const response = await apiClient.get(`/api/${userId}/tasks`)
+  getAll: async (username: string): Promise<Task[]> => {
+    const response = await apiClient.get(`/api/${username}/tasks`)
     return response.data
   },
 
-  getOne: async (userId: string, taskId: string): Promise<Task> => {
-    const response = await apiClient.get(`/api/${userId}/tasks/${taskId}`)
+  getOne: async (username: string, taskId: string): Promise<Task> => {
+    const response = await apiClient.get(`/api/${username}/tasks/${taskId}`)
     return response.data
   },
 
-  create: async (userId: string, data: TaskCreate): Promise<Task> => {
-    const response = await apiClient.post(`/api/${userId}/tasks`, data)
+  create: async (username: string, data: TaskCreate): Promise<Task> => {
+    const response = await apiClient.post(`/api/${username}/tasks`, data)
     return response.data
   },
 
-  update: async (userId: string, taskId: string, data: TaskUpdate): Promise<Task> => {
-    const response = await apiClient.put(`/api/${userId}/tasks/${taskId}`, data)
+  update: async (username: string, taskId: string, data: TaskUpdate): Promise<Task> => {
+    const response = await apiClient.put(`/api/${username}/tasks/${taskId}`, data)
     return response.data
   },
 
-  delete: async (userId: string, taskId: string): Promise<void> => {
-    await apiClient.delete(`/api/${userId}/tasks/${taskId}`)
+  delete: async (username: string, taskId: string): Promise<void> => {
+    await apiClient.delete(`/api/${username}/tasks/${taskId}`)
   },
 
-  toggleComplete: async (userId: string, taskId: string): Promise<Task> => {
-    const response = await apiClient.patch(`/api/${userId}/tasks/${taskId}/complete`)
+  toggleComplete: async (username: string, taskId: string): Promise<Task> => {
+    const response = await apiClient.patch(`/api/${username}/tasks/${taskId}/complete`)
     return response.data
   },
 }
