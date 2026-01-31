@@ -163,7 +163,7 @@ npm run dev
 **File**: `frontend/.env.local`
 
 ```env
-NEXT_PUBLIC_API_URL=https://hamzabhatti-todo-fullstack-web.hf.space
+NEXT_PUBLIC_API_URL=https://hamzabhatti-todo-ai-chatbot.hf.space
 NEXT_PUBLIC_BACKEND_URL=http://localhost:8000  # ✅ Correct for local dev
 ```
 
@@ -337,7 +337,7 @@ User sees error message
 **File**: `frontend/lib/api.ts:18`
 
 ```typescript
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://hamzabhatti-todo-fullstack-web.hf.space'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://hamzabhatti-todo-ai-chatbot.hf.space'
 ```
 
 This is for task API (GET/POST/DELETE tasks).

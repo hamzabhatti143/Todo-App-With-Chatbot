@@ -2,7 +2,7 @@
  * Chat API Client
  * Feature: 018-chatkit-frontend
  *
- * Dedicated API client for chat endpoints using backend URL (localhost:8000)
+ * Dedicated API client for chat endpoints using backend URL
  */
 
 import axios from "axios";
@@ -14,7 +14,7 @@ import type {
   ApiError,
 } from "@/types/chat";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://hamzabhatti-todo-ai-chatbot.hf.space";
 
 // Log backend URL for debugging
 if (typeof window !== "undefined") {

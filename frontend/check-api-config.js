@@ -26,7 +26,7 @@ try {
   console.log('⚠️  .env.local file not found!');
 }
 
-const fallbackUrl = 'https://hamzabhatti-todo-fullstack-web.hf.space';
+const fallbackUrl = 'https://hamzabhatti-todo-ai-chatbot.hf.space';
 
 console.log('.env.local file:');
 console.log(`  NEXT_PUBLIC_API_URL = ${apiUrl || '(not set)'}`);
@@ -47,8 +47,8 @@ if (apiUrl === 'http://localhost:8000') {
   console.log(`  ${envPath}`);
   console.log('');
   console.log('Should contain:');
-  console.log('  NEXT_PUBLIC_API_URL=https://hamzabhatti-todo-fullstack-web.hf.space');
-} else if (apiUrl && apiUrl.includes('hamzabhatti-todo-fullstack-web.hf.space')) {
+  console.log('  NEXT_PUBLIC_API_URL=https://hamzabhatti-todo-ai-chatbot.hf.space');
+} else if (apiUrl && apiUrl.includes('hamzabhatti-todo-ai-chatbot.hf.space')) {
   console.log('✅ Configuration is correct!');
   console.log('');
   console.log('If API calls still go to localhost:8000:');
@@ -67,7 +67,7 @@ if (apiUrl === 'http://localhost:8000') {
 } else {
   console.log('ℹ️  No Hugging Face Space URL detected');
   console.log('');
-  console.log('Expected: https://hamzabhatti-todo-fullstack-web.hf.space');
+  console.log('Expected: https://hamzabhatti-todo-ai-chatbot.hf.space');
   console.log(`Found: ${apiUrl || '(not set)'}`);
 }
 

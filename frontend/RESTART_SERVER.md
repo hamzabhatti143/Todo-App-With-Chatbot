@@ -15,7 +15,7 @@ The backend URL has been updated to use your Hugging Face Space. To apply these 
 3. **Verify the API URL**:
    - Open your browser's DevTools (F12)
    - Go to the Console tab
-   - You should see API requests going to: `https://hamzabhatti-todo-fullstack-web.hf.space`
+   - You should see API requests going to: `https://hamzabhatti-todo-ai-chatbot.hf.space`
    - NOT to `http://localhost:8000`
 
 ## Quick Test:
@@ -23,7 +23,7 @@ The backend URL has been updated to use your Hugging Face Space. To apply these 
 After restarting, the environment variable will be loaded. You can verify by checking the Network tab:
 - Try to sign in or register
 - Check the Network tab for the POST request
-- The URL should be: `https://hamzabhatti-todo-fullstack-web.hf.space/api/auth/login`
+- The URL should be: `https://hamzabhatti-todo-ai-chatbot.hf.space/api/auth/login`
 
 ## If Still Seeing localhost:8000:
 
@@ -38,7 +38,7 @@ If you still see `localhost:8000` after restarting, try:
 
 ## Current Configuration:
 
-- **API URL**: `https://hamzabhatti-todo-fullstack-web.hf.space`
+- **API URL**: `https://hamzabhatti-todo-ai-chatbot.hf.space`
 - **Frontend URL**: `http://localhost:3000`
 
 ---

@@ -15,7 +15,7 @@ import type {
   ChatMessage
 } from '@/types/chat'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://hamzabhatti-todo-fullstack-web.hf.space'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://hamzabhatti-todo-ai-chatbot.hf.space'
 
 // Log API URL for debugging (will show in browser console)
 if (typeof window !== 'undefined') {

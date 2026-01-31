@@ -205,7 +205,7 @@ todo-fullstack-web/
 
 | Variable | Description | Example | Required |
 |----------|-------------|---------|----------|
-| `NEXT_PUBLIC_API_URL` | Backend API URL | `http://localhost:8000` | Yes |
+| `NEXT_PUBLIC_API_URL` | Backend API URL | `https://hamzabhatti-todo-ai-chatbot.hf.space` | Yes |
 | `BETTER_AUTH_SECRET` | Authentication secret (32+ chars) | `<random-32-char-string>` | Yes |
 | `BETTER_AUTH_URL` | Frontend URL for auth callbacks | `http://localhost:3000` | Yes |
 
@@ -465,7 +465,7 @@ See `CLAUDE.md` for detailed development workflow.
 
 ## Support
 
-- API Documentation: http://localhost:8000/docs
+- API Documentation: https://hamzabhatti-todo-ai-chatbot.hf.space/docs
 - Project Constitution: `.specify/memory/constitution.md`
 - Development Guide: `CLAUDE.md`
 

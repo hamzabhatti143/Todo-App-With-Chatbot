@@ -692,7 +692,7 @@ Key principles:
 
 ## Links & Resources
 
-- **Live API Docs**: http://localhost:8000/docs
+- **Live API Docs**: https://hamzabhatti-todo-ai-chatbot.hf.space/docs
 - **Constitution**: `.specify/memory/constitution.md`
 - **Development Guide**: `CLAUDE.md`
 - **Frontend Docs**: `frontend/README.md`
