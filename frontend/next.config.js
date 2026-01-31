@@ -4,7 +4,7 @@ const nextConfig = {
 
   // Performance optimizations
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production', // Remove console.log in production
+    removeConsole: process.env.NODE_ENV === 'production',
   },
 
   // Optimize images
@@ -13,21 +13,12 @@ const nextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
   },
 
-  // Enable SWC minification for faster builds
-  swcMinify: true,
+  // Disable source maps in production
+  productionBrowserSourceMaps: false,
 
-  // Optimize builds
-  productionBrowserSourceMaps: false, // Disable source maps in production
-
-  // Environment variables
-  env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://hamzabhatti-todo-ai-chatbot.hf.space',
-  },
-
-  // Experimental features for better performance
+  // Experimental (only supported ones)
   experimental: {
-    optimizeCss: true, // Enable CSS optimization
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'], // Optimize specific packages
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
 }
 
