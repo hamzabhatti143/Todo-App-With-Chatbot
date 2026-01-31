@@ -81,7 +81,7 @@ interface Card3DTiltProps {
 export function Card3DTilt({
   children,
   className = '',
-  maxTilt = 15
+  maxTilt: _maxTilt = 15
 }: Card3DTiltProps) {
   const prefersReducedMotion = useReducedMotion();
 
@@ -102,19 +102,9 @@ export function Card3DTilt({
         rotateY: 0,
         transition: { duration: 0.2 },
       }}
-      onHoverStart={(event) => {
-        const card = event.currentTarget;
-        const rect = card.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-
-        const rotateX = ((y - centerY) / centerY) * maxTilt;
-        const rotateY = ((centerX - x) / centerX) * maxTilt;
-
-        // Apply rotation (this would need state management for full effect)
+      onHoverStart={() => {
+        // Card tilt effect would be implemented here with state management
+        // This is a placeholder for future enhancement
       }}
       whileTap={{ scale: 0.95 }}
     >

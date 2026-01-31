@@ -19,7 +19,7 @@ import {
   X
 } from 'lucide-react'
 import { useState } from 'react'
-import { Floating3D, Cube3D, Sphere3D, Card3DTilt } from '@/components/animations/floating-3d'
+import { Floating3D, Cube3D, Sphere3D } from '@/components/animations/floating-3d'
 
 export default function Home() {
   const { isAuthenticated, loading } = useAuth()
